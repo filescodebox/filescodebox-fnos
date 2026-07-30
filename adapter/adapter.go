@@ -38,8 +38,11 @@ func LoadConfig() Config {
 func Mount(h *server.Hertz, cfg Config) {
 	if !cfg.Enabled {
 		// 降级模式:飞牛路由组统一返回 503。
+		// 注意:Hertz 的 Use 中间件仅对已注册路由生效;若 group 下无任何具体路由,
+		// 中间件不会被触发(请求将 404)。故降级模式必须注册一个 catch-all 路由,
+		// 由其 handler 直接返回 503。
 		group := h.Group("/api/fnos")
-		group.Use(func(ctx context.Context, c *app.RequestContext) {
+		group.Any("/*any", func(ctx context.Context, c *app.RequestContext) {
 			c.JSON(consts.StatusServiceUnavailable, map[string]any{
 				"code":    503,
 				"message": "飞牛 Open API 未启用:" + cfg.DisabledReason,
