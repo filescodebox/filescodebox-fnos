@@ -9,9 +9,10 @@
 #     --build-arg VERSION=$(git describe --tags) .
 
 # ========== Stage 1: 构建 fnos-adapter(含 FileCodeBox 库) ==========
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
-# 构建依赖(原项目 SQLite 需 CGO)
+# 构建依赖:原项目 SQLite 用纯 Go 驱动 glebarez/sqlite(无需 CGO);
+# 此处保留 gcc/musl-dev 以备未来切换 CGO 驱动,不影响当前纯 Go 构建。
 RUN apk add --no-cache gcc musl-dev sqlite-dev git ca-certificates tzdata
 
 WORKDIR /workspace
