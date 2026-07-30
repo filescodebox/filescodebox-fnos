@@ -1,0 +1,14 @@
+appname         = filecodebox
+version         = 2.0.0
+display_name    = FileCodeBox
+platform        = x86
+maintainer      = zhangyi
+maintainer_url  = https://github.com/zy84338719/FileCodeBox
+distributor     = zhangyi
+distributor_url = https://github.com/zy84338719/FileCodeBox
+desktop_uidir   = ui
+desktop_applaunchname = filecodebox.Application
+service_port    = 12345
+desc            = 高性能文件/文本分享平台,支持拖拽上传、匿名取件、多存储后端,飞牛原生集成(SSO 免登录/共享目录挂载)。
+source          = thirdparty
+checksum        =

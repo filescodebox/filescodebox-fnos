@@ -1,0 +1,15 @@
+# 二进制与构建产物
+/fnos-adapter
+/bin/
+*.log
+
+# 本地配置
+.env
+*.local
+
+# IDE
+.idea/
+.vscode/
+
+# Go
+vendor/
