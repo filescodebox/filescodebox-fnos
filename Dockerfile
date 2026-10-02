@@ -3,7 +3,7 @@
 # 单容器单进程:fnos-adapter 二进制以库调用方式拉起 FileCodeBox 全部业务,
 # 并挂载飞牛 Open API 适配层(SSO/共享目录/通知/内网穿透)。
 #
-# 构建上下文需同时包含本仓库与 FileCodeBox 仓库(因 go.mod 用 replace 指向 ../FileCodeBox)。
+# 构建上下文需同时包含本仓库与 filescodebox 工作区(go.mod replace 指向 ../filescodebox/{core,contracts})。
 # 推荐在父目录构建:
 #   docker build -f filecodebox-fnos/Dockerfile -t filecodebox-fnos:latest \
 #     --build-arg VERSION=$(git describe --tags) .
@@ -17,8 +17,9 @@ RUN apk add --no-cache gcc musl-dev sqlite-dev git ca-certificates tzdata
 
 WORKDIR /workspace
 
-# 先复制 FileCodeBox 后端(被 replace 指向的库)
-COPY FileCodeBox/backend ./FileCodeBox/backend
+# 复制 filescodebox 工作区(contracts + core,被 replace 链指向的库)
+COPY filescodebox/contracts ./filescodebox/contracts
+COPY filescodebox/core ./filescodebox/core
 
 # 再复制本仓库
 COPY filecodebox-fnos ./filecodebox-fnos
@@ -52,7 +53,7 @@ WORKDIR /app
 COPY --from=builder /out/fnos-adapter ./
 
 # 运行时配置通过环境变量(FCB_* / FNOS_*)注入,与原项目 Dockerfile 一致,
-# 无需内置配置文件。默认配置加载逻辑见 backend/cmd/server/bootstrap。
+# 无需内置配置文件。默认配置加载逻辑见 filescodebox/core/bootstrap。
 
 RUN mkdir -p data && chown -R app:app /app
 

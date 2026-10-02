@@ -15,7 +15,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/cloudwego/hertz/pkg/route"
 
-	"github.com/zy84338719/fileCodeBox/backend/api/pkg/logger"
+	"github.com/filescodebox/core/pkg/logger"
 
 	"github.com/zy84338719/filecodebox-fnos/adapter/internal/fnosconfig"
 )

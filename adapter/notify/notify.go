@@ -8,7 +8,7 @@
 package notify
 
 import (
-	"github.com/zy84338719/fileCodeBox/backend/api/pkg/logger"
+	"github.com/filescodebox/core/pkg/logger"
 	"go.uber.org/zap"
 
 	"github.com/zy84338719/filecodebox-fnos/adapter/internal/fnosconfig"

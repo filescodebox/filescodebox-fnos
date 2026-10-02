@@ -11,7 +11,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/stretchr/testify/assert"
 
-	fclogger "github.com/zy84338719/fileCodeBox/backend/api/pkg/logger"
+	fclogger "github.com/filescodebox/core/pkg/logger"
 
 	"github.com/zy84338719/filecodebox-fnos/adapter/internal/fnosconfig"
 )

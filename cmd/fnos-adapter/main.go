@@ -14,8 +14,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/zy84338719/fileCodeBox/backend/api/pkg/logger"
-	"github.com/zy84338719/fileCodeBox/backend/cmd/server/bootstrap"
+	"github.com/filescodebox/core/pkg/logger"
+	"github.com/filescodebox/core/bootstrap"
 	"github.com/zy84338719/filecodebox-fnos/adapter"
 
 	"go.uber.org/zap"
