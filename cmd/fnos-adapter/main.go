@@ -9,9 +9,13 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"flag"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strings"
 	"syscall"
 
 	"github.com/filescodebox/core/pkg/logger"
@@ -28,6 +32,40 @@ var (
 	BuildTime = "unknown"
 )
 
+// ensureJWTSecret 保证 FCB_JWT_SECRET 存在:未显式配置时自动生成强密钥,
+// 持久化到数据目录(.jwt_secret,权限 0600),重启复用(已签发 token 不失效)。
+// 依据:core 的 validateSecrets 在 secret 缺失/弱值时拒绝启动(安全基线);
+// NAS 场景用户不应被迫手工生成密钥,故在库拉起前注入。
+func ensureJWTSecret() {
+	if os.Getenv("FCB_JWT_SECRET") != "" {
+		return
+	}
+	dataDir := os.Getenv("FCB_DATA_PATH")
+	if dataDir == "" {
+		dataDir = "./data"
+	}
+	secretPath := filepath.Join(dataDir, ".jwt_secret")
+	if b, err := os.ReadFile(secretPath); err == nil {
+		if s := strings.TrimSpace(string(b)); len(s) >= 32 {
+			_ = os.Setenv("FCB_JWT_SECRET", s)
+			return
+		}
+	}
+	raw := make([]byte, 32)
+	if _, err := rand.Read(raw); err != nil {
+		// 加密源不可用属系统级故障,直接失败
+		_, _ = os.Stderr.WriteString("无法生成 JWT 密钥(crypto/rand 不可用): " + err.Error() + "\n")
+		os.Exit(1)
+	}
+	secret := hex.EncodeToString(raw)
+	_ = os.MkdirAll(dataDir, 0o755)
+	if err := os.WriteFile(secretPath, []byte(secret), 0o600); err != nil {
+		_, _ = os.Stderr.WriteString("无法持久化 JWT 密钥(" + secretPath + "): " + err.Error() + "\n")
+		os.Exit(1)
+	}
+	_ = os.Setenv("FCB_JWT_SECRET", secret)
+}
+
 func main() {
 	// --config 指定 FileCodeBox 配置文件路径(透传给 bootstrap)。
 	configPath := flag.String("config", "", "FileCodeBox 配置文件路径(默认 configs/config.yaml)")
@@ -35,6 +73,9 @@ func main() {
 
 	// 注意:logger 必须先经 bootstrap.Init() 初始化后才能使用(logger 全局变量初始为 nil)。
 	// 故飞牛适配配置的日志输出放到 bootstrap 之后。
+
+	// 0. 保证 JWT 密钥存在(自动生成 + 数据卷持久化),必须在 bootstrap 读配置前注入。
+	ensureJWTSecret()
 
 	// 1. 以库调用方式拉起 FileCodeBox 全部业务。
 	//    返回的 *server.Hertz 已完成:读配置→初始化logger→建DB→建storage→装路由→装中间件。

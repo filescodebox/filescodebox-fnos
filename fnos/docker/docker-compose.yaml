@@ -13,7 +13,7 @@
 #   - service_port=12345 与 FileCodeBox 默认端口一致。
 services:
   filecodebox:
-    image: ${DOCKER_MIRROR}docker.io/zy84338719/filecodebox-fnos:${VERSION}
+    image: ghcr.io/filescodebox/filecodebox-fnos:${VERSION}
     container_name: filecodebox
     ports:
       - "${TRIM_SERVICE_PORT}:12345"
@@ -33,4 +33,6 @@ services:
       - FNOS_ENABLED=${FNOS_ENABLED:-false}
       - FNOS_APPID=${FNOS_APPID:-}
       - FNOS_APPSECRET=${FNOS_APPSECRET:-}
+      # JWT 密钥:可选。缺省时 adapter 自动生成强密钥并持久化到数据卷(.jwt_secret),重启复用
+      - FCB_JWT_SECRET=${FCB_JWT_SECRET:-}
     restart: unless-stopped

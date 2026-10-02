@@ -1,11 +1,11 @@
 appname         = filecodebox
-version         = 2.0.0
+version         = 0.1.0
 display_name    = FileCodeBox
 platform        = x86
 maintainer      = zhangyi
-maintainer_url  = https://github.com/zy84338719/FileCodeBox
+maintainer_url  = https://github.com/filescodebox/filecodebox-fnos
 distributor     = zhangyi
-distributor_url = https://github.com/zy84338719/FileCodeBox
+distributor_url = https://github.com/filescodebox/filecodebox-fnos
 desktop_uidir   = ui
 desktop_applaunchname = filecodebox.Application
 service_port    = 12345
