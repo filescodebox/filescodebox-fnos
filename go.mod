@@ -4,7 +4,7 @@ go 1.26.5
 
 require (
 	github.com/cloudwego/hertz v0.9.6
-	github.com/filescodebox/core v0.0.0
+	github.com/filescodebox/core v0.1.0
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.0
 )
@@ -22,7 +22,7 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/filescodebox/contracts v0.0.0 // indirect
+	github.com/filescodebox/contracts v0.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/glebarez/go-sqlite v1.21.2 // indirect
 	github.com/glebarez/sqlite v1.11.0 // indirect
@@ -80,10 +80,3 @@ require (
 	modernc.org/memory v1.5.0 // indirect
 	modernc.org/sqlite v1.23.1 // indirect
 )
-
-// 库式复用 FileCodeBox 业务核心:replace 指向本地源码。
-// 注意:replace 不跨模块传递,core 依赖的 contracts 也须在本模块声明。
-// thrift 版本约束(v0.13.0)由 contracts 以 require 形式传递,此处无需复述。
-replace github.com/filescodebox/core => ../filescodebox/core
-
-replace github.com/filescodebox/contracts => ../filescodebox/contracts

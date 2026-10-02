@@ -3,28 +3,27 @@
 # 单容器单进程:fnos-adapter 二进制以库调用方式拉起 FileCodeBox 全部业务,
 # 并挂载飞牛 Open API 适配层(SSO/共享目录/通知/内网穿透)。
 #
-# 构建上下文需同时包含本仓库与 filescodebox 工作区(go.mod replace 指向 ../filescodebox/{core,contracts})。
-# 推荐在父目录构建:
-#   docker build -f filecodebox-fnos/Dockerfile -t filecodebox-fnos:latest \
-#     --build-arg VERSION=$(git describe --tags) .
+# 构建上下文为本仓库即可(core/contracts 经 go.mod 正式版本从 module proxy 拉取)。
+#   cd filecodebox-fnos && docker build -t filecodebox-fnos:latest .
+# GOPROXY 可用 --build-arg GOPROXY=... 覆盖(默认国内加速;海外 CI 传空走默认)。
 
 # ========== Stage 1: 构建 fnos-adapter(含 FileCodeBox 库) ==========
 FROM golang:1.26-alpine AS builder
+
+ARG GOPROXY=https://goproxy.cn,direct
+ENV GOPROXY=${GOPROXY}
 
 # 构建依赖:原项目 SQLite 用纯 Go 驱动 glebarez/sqlite(无需 CGO);
 # 此处保留 gcc/musl-dev 以备未来切换 CGO 驱动,不影响当前纯 Go 构建。
 RUN apk add --no-cache gcc musl-dev sqlite-dev git ca-certificates tzdata
 
-WORKDIR /workspace
-
-# 复制 filescodebox 工作区(contracts + core,被 replace 链指向的库)
-COPY filescodebox/contracts ./filescodebox/contracts
-COPY filescodebox/core ./filescodebox/core
-
-# 再复制本仓库
-COPY filecodebox-fnos ./filecodebox-fnos
-
 WORKDIR /workspace/filecodebox-fnos
+
+# 先复制模块描述再下载依赖(利用层缓存)
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
 
 # 构建参数(版本信息)
 ARG VERSION=dev

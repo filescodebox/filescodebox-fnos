@@ -1,0 +1,5 @@
+.git/
+*.md
+!README.md
+fnos/*.fpk
+.DS_Store
