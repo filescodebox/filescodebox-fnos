@@ -1,4 +1,4 @@
-# filecodebox-fnos
+# filescodebox-fnos
 
 > [FileCodeBox](https://github.com/zy84338719/FileCodeBox) 的飞牛(fnOS)应用适配层 —— 把 FileCodeBox 当作库复用,包装为可在飞牛 NAS 应用商店上架的第三方应用,并接入飞牛 Open API。
 
