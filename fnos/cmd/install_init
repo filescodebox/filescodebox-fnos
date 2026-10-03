@@ -1,11 +1,9 @@
 #!/bin/bash
-# 安装前置:初始化数据目录
-# 容器内进程以 uid 1000(Dockerfile 中的 app 用户)运行,数据卷挂载点
-# ${TRIM_PKGVAR}/data 需预先存在并归其所有,否则 SQLite/上传落盘会 EACCES。
+# 安装前置:初始化数据目录归属
+# - data/ 归容器内应用进程(Dockerfile 中固定 uid 1000)
+# - redis/ 归官方 redis 镜像运行用户(uid 999);取件码/匿名分享映射必需
 set -e
-
-DATA_DIR="${TRIM_PKGVAR}/data"
-mkdir -p "$DATA_DIR"
-chown -R 1000:1000 "$DATA_DIR"
-
-echo "data dir ready: $DATA_DIR"
+mkdir -p "${TRIM_PKGVAR}/data" "${TRIM_PKGVAR}/redis"
+chown -R 1000:1000 "${TRIM_PKGVAR}/data"
+chown -R 999:999 "${TRIM_PKGVAR}/redis"
+echo "data dirs ready under ${TRIM_PKGVAR}"

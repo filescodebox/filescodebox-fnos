@@ -12,4 +12,5 @@ service_port=12345
 ctl_stop=true
 checkport=true
 desc=文件快递柜——匿名口令分享文本/文件,支持拖拽上传、多云存储后端;飞牛原生集成(数据落 NAS 共享目录/应用中心托管启停)。
+changelog=0.2.2: 对齐飞牛官方打包规范,内置 Redis 修复匿名取件,新增飞牛凭证安装向导。
 source=thirdparty

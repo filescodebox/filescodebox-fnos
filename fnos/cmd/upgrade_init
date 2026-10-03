@@ -1,7 +1,9 @@
 #!/bin/bash
-# 升级前置:复确认数据目录归属(容器内固定 uid 1000,数据卷跨版本沿用)
+# 升级前置:复确认数据目录归属
+# - data/ 归容器内应用进程(固定 uid 1000,数据卷跨版本沿用)
+# - redis/ 归官方 redis 镜像运行用户(uid 999)
 set -e
-DATA_DIR="${TRIM_PKGVAR}/data"
-mkdir -p "$DATA_DIR"
-chown -R 1000:1000 "$DATA_DIR"
+mkdir -p "${TRIM_PKGVAR}/data" "${TRIM_PKGVAR}/redis"
+chown -R 1000:1000 "${TRIM_PKGVAR}/data"
+chown -R 999:999 "${TRIM_PKGVAR}/redis"
 exit 0

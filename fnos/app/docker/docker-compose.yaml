@@ -3,12 +3,15 @@
 # 飞牛应用框架注入的官方占位符(见 developer.fnnas.com 文档):
 #   ${TRIM_SERVICE_PORT}  manifest.service_port 声明的对外端口,映射容器 12345
 #   ${TRIM_PKGVAR}        应用运行时数据目录(用户可见的 NAS 共享路径)
-# 向导变量(wizard 待补,缺省=降级模式/JWT 自动生成):
+# 向导变量(wizard/install + wizard/config 收集,经 cmd/*_callback 写入本目录 .env,
+# 由 compose 自动加载完成插值;全部留空=降级模式/JWT 自动生成):
 #   ${FNOS_ENABLED} ${FNOS_APPID} ${FNOS_APPSECRET} ${FCB_JWT_SECRET}
 #
 # 设计:
-#   - 数据(上传文件 + SQLite 库)全部落在 ${TRIM_PKGVAR}/data,即用户可见的 NAS 共享文件夹,
-#     可在飞牛文件管理中直接查看、备份、迁移。
+#   - 数据(上传文件 + SQLite + Redis AOF)全部落在 ${TRIM_PKGVAR} 下,即用户可见的
+#     NAS 共享文件夹,可在飞牛文件管理中直接查看、备份、迁移。
+#   - 内置 redis:取件码/匿名分享映射必需(无 redis 时匿名取件全 500,与 215 部署
+#     同款教训)。不用 fnOS 系统 redis 中间件:桥接网络容器无法访问宿主 127.0.0.1。
 #   - 镜像 tag 写死 major.minor:官方 compose 占位符不含版本变量(参照官方 Docker 应用
 #     案例),major.minor 升级时须与本行同步(与 manifest.version 同批发)。
 #   - container_name 须与 cmd/main 的 status 检测保持一致。
@@ -30,10 +33,30 @@ services:
       - FCB_DATABASE_DRIVER=sqlite
       - FCB_DATABASE_DB_NAME=/app/data/fileCodeBox.db
       - FCB_OPEN_UPLOAD=true
+      # 缺省指向本编排内的 redis 服务;要禁用设 FCB_REDIS_HOST= 为空
+      # (禁用后匿名取件/文件直传分享不可用,文本分享与账号体系不受影响)
+      - FCB_REDIS_HOST=${FCB_REDIS_HOST:-redis}
+      - FCB_REDIS_PORT=6379
       # 飞牛 Open API 凭证(缺省时应用以降级模式运行,飞牛能力关闭,业务正常)
       - FNOS_ENABLED=${FNOS_ENABLED:-false}
       - FNOS_APPID=${FNOS_APPID:-}
       - FNOS_APPSECRET=${FNOS_APPSECRET:-}
       # JWT 密钥:可选。缺省时 adapter 自动生成强密钥并持久化到数据卷(.jwt_secret),重启复用
       - FCB_JWT_SECRET=${FCB_JWT_SECRET:-}
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: filescodebox-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - ${TRIM_PKGVAR:?}/redis:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5

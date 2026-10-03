@@ -1,3 +1,26 @@
 #!/bin/bash
-# 配置向导提交回调:向导变量变更后由 fnOS 重建 compose 项目使新 env 生效;无额外动作。
-exit 0
+# 配置向导提交回调:把新收集的凭证写入 compose 同目录 .env(逻辑与 install_callback 一致),
+# fnOS 在回调完成后重建 compose 项目,新 env 随之生效。
+set -e
+
+ENV_FILE="${TRIM_APPDEST}/docker/.env"
+
+quote() {
+  printf '"%s"' "$(printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/\$/\\$/g')"
+}
+
+ENABLED="false"
+if [ -n "$FNOS_APPID" ] && [ -n "$FNOS_APPSECRET" ]; then
+  ENABLED="true"
+fi
+
+umask 077
+cat > "$ENV_FILE" <<EOF
+# 由飞牛向导生成(cmd/install_callback 或 config_callback),手工修改后需在应用设置重新提交或重启应用
+FNOS_ENABLED=$(quote "$ENABLED")
+FNOS_APPID=$(quote "$FNOS_APPID")
+FNOS_APPSECRET=$(quote "$FNOS_APPSECRET")
+FCB_JWT_SECRET=$(quote "$FCB_JWT_SECRET")
+EOF
+
+echo "wizard env updated: $ENV_FILE (FNOS_ENABLED=$ENABLED)"
