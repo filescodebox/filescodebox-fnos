@@ -1,20 +1,21 @@
-# FileCodeBox 飞牛(fnOS)容器编排
+# FilesCodeBox 飞牛(fnOS)容器编排(Docker 应用包模式)
 #
-# 飞牛变量占位(由飞牛应用框架在安装时注入):
-#   ${DOCKER_MIRROR}  Docker 镜像加速前缀(可空)
-#   ${VERSION}        应用版本(取自 manifest.version)
-#   ${TRIM_SERVICE_PORT}  对外端口(用户在安装向导配置,映射到容器 12345)
-#   ${TRIM_PKGVAR}    飞牛包变量目录(用户可见的 NAS 共享路径),映射到容器 /app/data
-#   ${FNOS_APPID} / ${FNOS_APPSECRET}  飞牛 Open API 凭证(向导可选配置,缺省=降级模式)
+# 飞牛应用框架注入的官方占位符(见 developer.fnnas.com 文档):
+#   ${TRIM_SERVICE_PORT}  manifest.service_port 声明的对外端口,映射容器 12345
+#   ${TRIM_PKGVAR}        应用运行时数据目录(用户可见的 NAS 共享路径)
+# 向导变量(wizard 待补,缺省=降级模式/JWT 自动生成):
+#   ${FNOS_ENABLED} ${FNOS_APPID} ${FNOS_APPSECRET} ${FCB_JWT_SECRET}
 #
 # 设计:
 #   - 数据(上传文件 + SQLite 库)全部落在 ${TRIM_PKGVAR}/data,即用户可见的 NAS 共享文件夹,
 #     可在飞牛文件管理中直接查看、备份、迁移。
-#   - service_port=12345 与 FileCodeBox 默认端口一致。
+#   - 镜像 tag 写死 major.minor:官方 compose 占位符不含版本变量(参照官方 Docker 应用
+#     案例),major.minor 升级时须与本行同步(与 manifest.version 同批发)。
+#   - container_name 须与 cmd/main 的 status 检测保持一致。
 services:
-  filecodebox:
-    image: ghcr.io/filescodebox/filescodebox-fnos:${VERSION}
-    container_name: filecodebox
+  filescodebox:
+    image: ghcr.io/filescodebox/filescodebox-fnos:0.2
+    container_name: filescodebox
     ports:
       - "${TRIM_SERVICE_PORT}:12345"
     volumes:

@@ -1,0 +1,3 @@
+#!/bin/bash
+# 配置向导提交回调:向导变量变更后由 fnOS 重建 compose 项目使新 env 生效;无额外动作。
+exit 0

@@ -1,0 +1,11 @@
+#!/bin/bash
+# 安装前置:初始化数据目录
+# 容器内进程以 uid 1000(Dockerfile 中的 app 用户)运行,数据卷挂载点
+# ${TRIM_PKGVAR}/data 需预先存在并归其所有,否则 SQLite/上传落盘会 EACCES。
+set -e
+
+DATA_DIR="${TRIM_PKGVAR}/data"
+mkdir -p "$DATA_DIR"
+chown -R 1000:1000 "$DATA_DIR"
+
+echo "data dir ready: $DATA_DIR"

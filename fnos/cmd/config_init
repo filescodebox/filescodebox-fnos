@@ -1,0 +1,3 @@
+#!/bin/bash
+# 配置向导打开前置:无预填逻辑(向导待补,见 wizard/README.md)。
+exit 0

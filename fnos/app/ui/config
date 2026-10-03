@@ -1,0 +1,13 @@
+{
+  ".url": {
+    "filescodebox.main": {
+      "title": "FilesCodeBox",
+      "icon": "images/icon_{0}.png",
+      "type": "url",
+      "protocol": "http",
+      "port": "12345",
+      "url": "/",
+      "allUsers": true
+    }
+  }
+}

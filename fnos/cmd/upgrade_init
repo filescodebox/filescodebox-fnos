@@ -1,0 +1,7 @@
+#!/bin/bash
+# 升级前置:复确认数据目录归属(容器内固定 uid 1000,数据卷跨版本沿用)
+set -e
+DATA_DIR="${TRIM_PKGVAR}/data"
+mkdir -p "$DATA_DIR"
+chown -R 1000:1000 "$DATA_DIR"
+exit 0
