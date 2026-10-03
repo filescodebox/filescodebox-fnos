@@ -13,7 +13,7 @@
 #   - service_port=12345 与 FileCodeBox 默认端口一致。
 services:
   filecodebox:
-    image: ghcr.io/filescodebox/filecodebox-fnos:${VERSION}
+    image: ghcr.io/filescodebox/filescodebox-fnos:${VERSION}
     container_name: filecodebox
     ports:
       - "${TRIM_SERVICE_PORT}:12345"
