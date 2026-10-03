@@ -40,6 +40,9 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # buildx 默认附带的 provenance 认证清单会使 GitHub Packages 页面渲染
+          # 500(注册表拉取不受影响,仅 Web UI 坏)。关掉以保证包页可开、可见性可改。
+          provenance: false
           build-args: |
             VERSION=${{ github.ref_name }}
             COMMIT=${{ github.sha }}
