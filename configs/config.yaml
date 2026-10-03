@@ -1,0 +1,32 @@
+# FilesCodeBox 飞牛适配层默认配置——裸 `docker run` 场景的开箱默认。
+# fnOS 应用包模式(compose)经 FCB_* env 覆盖同名项，值与本文件保持一致；
+# core 对 open_upload/datapath/storage_path 无零值可用默认(缺失时上传被拒、
+# 存储路径为空)，故必须随镜像携带。改默认值时与 fnos/app/docker/docker-compose.yaml 同步。
+server:
+  host: "0.0.0.0"
+  port: 12345
+  mode: "release"
+  # base_url 留空=分享链接用请求头推断;反代/穿透场景建议显式配置
+  base_url: ""
+database:
+  driver: "sqlite"
+  db_name: "/app/data/fileCodeBox.db"
+app:
+  name: "FilesCodeBox"
+  datapath: "/app/data"
+upload:
+  # 匿名口令分享是产品核心能力,开箱即用(管理后台可关)
+  open_upload: true
+  upload_size: 10485760      # 10MB 单请求体上限
+  enable_chunk: true
+  chunk_size: 2097152        # 2MB
+storage:
+  type: "local"
+  storage_path: "/app/data/uploads"
+log:
+  level: "info"
+user:
+  allow_user_registration: true
+observability:
+  metrics:
+    enabled: false

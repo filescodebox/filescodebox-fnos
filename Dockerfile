@@ -50,9 +50,9 @@ RUN addgroup -g 1000 app && \
 WORKDIR /app
 
 COPY --from=builder /out/fnos-adapter ./
-
-# 运行时配置通过环境变量(FCB_* / FNOS_*)注入,与原项目 Dockerfile 一致,
-# 无需内置配置文件。默认配置加载逻辑见 filescodebox/core/bootstrap。
+# 随镜像携带默认配置:裸 docker run 的开箱可用性(open_upload/存储路径
+# 在 core 无零值可用默认);fnOS 应用包模式由 compose env 覆盖同名项。
+COPY configs/config.yaml ./configs/config.yaml
 
 RUN mkdir -p data && chown -R app:app /app
 
