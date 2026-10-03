@@ -37,8 +37,8 @@ github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkp
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/filescodebox/contracts v0.2.1 h1:EcAqEiC27W4SdgQwgEHtmzhPwvz5VR3utlIzHrTJsX8=
 github.com/filescodebox/contracts v0.2.1/go.mod h1:gnFnut5c+SdtJbo9p/JAtp1VIMVSq25GEA/4AU38N8I=
-github.com/filescodebox/core v0.5.0 h1:nVPD+tzpAjrOa4bbpwHAg48HFyQ//KqjrkfPEYXyeyc=
-github.com/filescodebox/core v0.5.0/go.mod h1:d2WEQL8gU06/0FdcJ1PI0QiPbtMsiBCrZDwBkyml0ME=
+github.com/filescodebox/core v0.6.4 h1:jgEri/9vkFsAu5SkCJv+b4KPyEjJID+DA8Y5Is91WrM=
+github.com/filescodebox/core v0.6.4/go.mod h1:d2WEQL8gU06/0FdcJ1PI0QiPbtMsiBCrZDwBkyml0ME=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
 github.com/frankban/quicktest v1.14.6/go.mod h1:4ptaffx2x8+WTWXmUCuVU6aPUX1/Mz7zb5vbUoiM6w0=
 github.com/fsnotify/fsnotify v1.9.0 h1:2Ml+OJNzbYCTzsxtv8vKSFD9PbJjmhYF14k/jKC7S9k=
