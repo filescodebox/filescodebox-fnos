@@ -60,7 +60,8 @@ USER app
 
 EXPOSE 12345
 
+# wget --spider 发 HEAD,/health 未注册 HEAD 恒 404 → 健康检查永不通过,须显式 GET
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:12345/health || exit 1
+    CMD wget -q -O /dev/null http://localhost:12345/health || exit 1
 
 CMD ["./fnos-adapter"]
