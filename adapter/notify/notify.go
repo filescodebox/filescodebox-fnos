@@ -11,7 +11,7 @@ import (
 	"github.com/filescodebox/core/pkg/logger"
 	"go.uber.org/zap"
 
-	"github.com/zy84338719/filecodebox-fnos/adapter/internal/fnosconfig"
+	"github.com/filescodebox/filescodebox-fnos/adapter/internal/fnosconfig"
 )
 
 // Init 初始化飞牛通知 channel。

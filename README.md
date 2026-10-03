@@ -1,107 +1,124 @@
 # filescodebox-fnos
 
-> [FileCodeBox](https://github.com/zy84338719/FileCodeBox) 的飞牛(fnOS)应用适配层 —— 把 FileCodeBox 当作库复用,包装为可在飞牛 NAS 应用商店上架的第三方应用,并接入飞牛 Open API。
+[![CI](https://github.com/filescodebox/filescodebox-fnos/actions/workflows/ci.yml/badge.svg)](https://github.com/filescodebox/filescodebox-fnos/actions/workflows/ci.yml)
 
----
+> [FilesCodeBox](https://github.com/filescodebox/filescodebox)（文件快递柜）的飞牛 fnOS 应用适配层——单容器库式集成 FilesCodeBox 全部业务，包装为可在飞牛 NAS 应用中心安装的第三方应用，并接入飞牛 Open API。
 
-## 它是什么
-
-本项目是 **独立的 Go 模块**,通过 `go.mod` 的 `replace` 把 [FileCodeBox](../FileCodeBox) 当作库复用(运行时单进程库式调用 `bootstrap.Bootstrap()`),并在此之上叠加飞牛能力:
+## 特性
 
 | 能力 | 说明 | 状态 |
 |------|------|------|
-| **SSO 免登录** | 飞牛账号一键登录,映射为本系统用户 | 接口桩(凭证就绪后补全) |
-| **共享目录列表** | 读取 NAS 共享文件夹作为存储目录选项 | 接口桩 |
-| **通知中心** | 推送到飞牛通知中心 | 接口桩 |
-| **内网穿透/外网分享** | 为分享生成外网链接 | 接口桩 |
-| **降级模式** | 无凭证时飞牛能力关闭,业务正常运行 | ✅ 已实现 |
+| **一键安装** | `fnpack` 标准应用包，应用中心托管启停/升级 | ✅ fnpack 1.2.3 打包通过 |
+| **业务全功能** | 单进程库式调用 [core](https://github.com/filescodebox/core) `bootstrap.Bootstrap()`，文本/文件分享、取件码、多云存储全部可用 | ✅ |
+| **数据落 NAS** | 上传文件 + SQLite + Redis AOF 全部落在用户可见的共享目录，文件管理器可直接查看/备份 | ✅ |
+| **开箱即用** | JWT 密钥自动生成并持久化；内置 Redis（取件码依赖）；安装向导收集可选凭证 | ✅ |
+| **降级模式** | 未配置飞牛凭证时，飞牛集成关闭、业务完整运行 | ✅ |
+| **SSO 免登录** | 飞牛账号一键登录映射为本系统用户 | 🔜 待凭证 |
+| **通知中心** | 分享事件推送飞牛通知 | 🔜 待凭证 |
+| **共享目录存储** | 读取 NAS 共享文件夹作为存储后端选项 | 🔜 待凭证 |
 
-> **凭证策略**:飞牛 Open API 需 `appid/appsecret`。本项目先抽象接口,凭证留作环境变量(`FNOS_APPID`/`FNOS_APPSECRET`)后填。缺省即降级模式。
-
-## 运行时架构(单容器单进程)
+## 运行时架构（单容器单进程）
 
 ```
                 ┌──────────────── fnos-adapter 二进制(容器入口)────────────────┐
                 │                                                              │
-  HTTP 12345 ──►│  bootstrap.Bootstrap() ──► *server.Hertz (FileCodeBox 全业务) │
+  HTTP 12345 ──►│  bootstrap.Bootstrap() ──► *server.Hertz (FilesCodeBox 全业务)│
                 │         │                              ▲                      │
                 │         └── adapter.Mount(h, cfg) ─────┘ 挂载 /api/fnos/*     │
                 │                          (SSO/目录/通知/穿透)                 │
                 └──────────────────────────────────────────────────────────────┘
-                                            │
-                            /app/data  ◄──── ┴────►  NAS 共享文件夹(${TRIM_PKGVAR}/data)
-                            (上传文件 + SQLite)
+                     │                                            │
+        /app/data ◄──┘ (上传文件+SQLite+JWT密钥)      /app/data ◄── redis AOF
+                     └────────────── ${TRIM_PKGVAR} ──────┘ (NAS 共享目录)
 ```
 
-- **库式调用**:不通过 HTTP 调 FileCodeBox,而是同进程 `import` + 函数调用,零跨进程开销。
-- **不侵入**:不修改 FileCodeBox 原有路由与业务逻辑,飞牛能力以独立路由组 `/api/fnos/*` 注入。
+- **库式调用**：同进程 `import` + 函数调用 `bootstrap.Bootstrap()`，零跨进程开销
+- **不侵入**：不修改 core 原有路由，飞牛能力以独立路由组 `/api/fnos/*` 注入（降级模式统一 503）
 
-## 目录结构
+## 安装（飞牛 fnOS）
 
-```
-filecodebox-fnos/
-├─ cmd/fnos-adapter/main.go     容器入口:库式拉起 + 挂载 adapter
-├─ adapter/                     飞牛 Open API 适配层
-│  ├─ adapter.go                Mount:在 Hertz 上挂载 /api/fnos/*
-│  ├─ internal/fnosconfig/      配置类型(独立子包,打破循环依赖)
-│  ├─ sso/                      SSO 免登录
-│  ├─ storage/                  共享目录列表
-│  ├─ notify/                   通知中心
-│  └─ tunnel/                   内网穿透
-├─ fnos/                        飞牛 .fpk 打包定义
-│  ├─ manifest                  应用元数据
-│  ├─ config/privilege          运行权限声明
-│  ├─ docker/docker-compose.yaml 飞牛容器编排(飞牛变量占位)
-│  ├─ ui/ cmd/ wizard/          桌面入口/生命周期/安装向导(凭证期补全)
-│  └─ FileCodeBox.sc            端口转发声明
-└─ Dockerfile                   单容器构建
+1. 从 [Releases](https://github.com/filescodebox/filescodebox-fnos/releases) 下载 `filescodebox.fpk`（或自行 [打包](#打包fpk)）
+2. 飞牛应用中心 → 手动安装 → 上传 fpk，按向导完成安装（飞牛凭证可留空，随时在应用设置补填）
+3. 桌面入口打开即用；数据在应用数据目录（NAS 共享路径）下的 `data/`（业务）与 `redis/`（取件码）
+
+> 要求：fnOS 设备可拉取 `ghcr.io/filescodebox/filescodebox-fnos`（x86/ARM 均可，镜像多架构）。
+
+## Docker 直接部署（不经飞牛应用中心）
+
+```bash
+docker run -d --name filescodebox -p 12345:12345 \
+  -v ./data:/app/data \
+  -e FCB_SERVER_HOST=0.0.0.0 -e FCB_PRODUCTION=1 \
+  ghcr.io/filescodebox/filescodebox-fnos:0.2
 ```
 
-## 前置:原项目改造
+完整编排（含 Redis、健康检查、密钥引导）见 [`fnos/app/docker/docker-compose.yaml`](fnos/app/docker/docker-compose.yaml)。
 
-FileCodeBox 的业务逻辑原在 `backend/internal/`,Go 的 internal 规则禁止跨模块 import。为支持库式复用,原项目已做**机械改造**:`backend/internal` → `backend/api`(仅目录改名 + import 路径替换,零业务逻辑变更,`go build/vet/test` 全绿)。
+## 打包 .fpk
 
-两个仓库需置于同级目录:
+```bash
+# 安装 fnpack: https://developer.fnnas.com/docs/cli/fnpack/
+cd fnos && fnpack build     # 产物 filescodebox.fpk
 ```
-my_project/
-├─ FileCodeBox/          (原项目,已改造 internal→api)
-└─ filecodebox-fnos/     (本项目)
-```
+
+`fnos/` 目录即应用包定义，**已对齐飞牛官方规范**（manifest / app/docker / app/ui 入口+图标 / cmd 生命周期脚本 / wizard 向导 / config 资源与权限）。CI 每次推送都会跑 `fnpack build` 校验并产出 fpk 构件。
+
+注意：compose 内镜像 tag 写死 major.minor（如 `0.2`），发版时须与 `manifest` 的 `version` 同步更新。
 
 ## 本地开发
 
+本仓已纳入 [filescodebox](https://github.com/filescodebox/filescodebox) 装配仓的 `go.work`：
+
 ```bash
-# 在 filecodebox-fnos 目录
-go build ./cmd/fnos-adapter      # 编译验证(已通过)
-go run ./cmd/fnos-adapter         # 降级模式启动(FileCodeBox 全功能可用)
+# 工作区内(hub 根 make setup 拉齐五仓后):联编本地 core main
+cd filecodebox-fnos && go build ./... && go test ./...
+
+# 独立构建:钉 go.mod 正式版本(与 CI/Docker 一致)
+GOWORK=off go test ./...
+
+# 降级模式运行(业务全功能,飞牛能力关闭)
+go run ./cmd/fnos-adapter
 
 # 启用飞牛能力(需凭证)
 FNOS_ENABLED=true FNOS_APPID=xxx FNOS_APPSECRET=yyy go run ./cmd/fnos-adapter
 ```
 
-## 构建 Docker 镜像
+或使用 `make build / test / run / fpack / docker`。
 
-构建上下文需同时包含两个仓库(因 replace 指向 `../FileCodeBox`):
-```bash
-cd my_project   # 父目录
-docker build -f filecodebox-fnos/Dockerfile -t filecodebox-fnos:latest .
+## 目录结构
+
+```
+filescodebox-fnos/
+├─ cmd/fnos-adapter/            容器入口:JWT 密钥引导 + 库式拉起 + 挂载 adapter
+├─ adapter/                     飞牛 Open API 适配层(/api/fnos/*)
+│  ├─ internal/fnosconfig/      配置加载(独立子包,无环)
+│  ├─ internal/client/          飞牛 API 统一 HTTP client(签名/重试待文档)
+│  └─ sso/ storage/ notify/ tunnel/   各能力模块(凭证就绪后填实)
+├─ fnos/                        飞牛 .fpk 应用包定义(官方规范)
+│  ├─ manifest                  应用元数据(version/platform/入口/端口)
+│  ├─ app/docker/               容器编排(app + 内置 redis,官方 TRIM_* 占位符)
+│  ├─ app/ui/                   桌面入口(config)与图标(images/)
+│  ├─ cmd/                      生命周期脚本(install/upgrade/uninstall/config)
+│  ├─ wizard/                   安装/配置向导(飞牛凭证与 JWT 密钥)
+│  └─ config/                   权限(privilege)与资源(resource: docker-project)
+└─ Dockerfile                   多架构镜像构建(amd64/arm64)
 ```
 
-## 飞牛应用打包
+## 版本对应
 
-`fnos/` 目录即 `.fpk` 包定义,参照 [conversun/fnos-apps](https://github.com/conversun/fnos-apps) 真实仓库的格式:
-- `manifest`:应用元数据(`source = thirdparty`,`service_port = 12345`)
-- `docker/docker-compose.yaml`:用 `${TRIM_PKGVAR}` 挂载 NAS 共享文件夹到 `/app/data`
-- `config/privilege`:运行权限(`run-as: package`)
-- `ui/cmd/wizard`:桌面入口与生命周期脚本(待凭证期按飞牛规范补全)
+| 本仓 | core | 说明 |
+|------|------|------|
+| v0.2.x | v0.5.0 | 上传治理/多云存储/P0 修复；fnpack 规范化 + 内置 Redis + 向导 |
 
-> 打包成 `.fpk` 需飞牛官方打包工具(见飞牛开发者文档)。`fnos/` 目录结构已就绪。
+镜像：`ghcr.io/filescodebox/filescodebox-fnos`（tag 跟随 Release；`0.1.x` 时代镜像名为 `filecodebox-fnos`，已冻结）。
 
-## 待办(凭证就绪后)
+## 路线图
 
-- [ ] SSO:`sso/sso.go` 实现 ticket→飞牛用户→本系统用户→JWT
-- [ ] 共享目录:`storage/storage.go` 调飞牛"列出共享目录"接口
-- [ ] 通知:`notify/notify.go` 推送到飞牛通知中心
-- [ ] 内网穿透:`tunnel/tunnel.go` 生成分享外网链接
-- [ ] `fnos/ui` `fnos/cmd` `fnos/wizard` 按飞牛桌面规范补全
-- [ ] 飞牛 Open API 签名算法(凭证下发后从文档核实)
+- [ ] SSO：`sso/sso.go` ticket → 飞牛用户 → 本系统用户 → JWT（待飞牛凭证与 Open API 文档）
+- [ ] 通知中心、共享目录存储、外网分享链接（同上）
+- [ ] fnOS 真机全流程验证（安装→向导→升级→卸载）
+- [ ] 飞牛应用中心上架（开发者后台未开放前经官方交流群提交）
+
+## 相关仓库
+
+[filescodebox](https://github.com/filescodebox/filescodebox)（装配仓）· [core](https://github.com/filescodebox/core)（业务核心）· [server](https://github.com/filescodebox/server)（独立部署壳）· [frontend](https://github.com/filescodebox/frontend) · [charts](https://github.com/filescodebox/charts)（Helm）

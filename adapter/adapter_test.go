@@ -13,7 +13,7 @@ import (
 
 	fclogger "github.com/filescodebox/core/pkg/logger"
 
-	"github.com/zy84338719/filecodebox-fnos/adapter/internal/fnosconfig"
+	"github.com/filescodebox/filescodebox-fnos/adapter/internal/fnosconfig"
 )
 
 // TestMain 初始化最小 logger,避免 adapter.Mount 内 logger.Warn 在 logger 全局变量为 nil 时 panic。

@@ -17,10 +17,11 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/filescodebox/core/pkg/logger"
 	"github.com/filescodebox/core/bootstrap"
-	"github.com/zy84338719/filecodebox-fnos/adapter"
+	"github.com/filescodebox/filescodebox-fnos/adapter"
 
 	"go.uber.org/zap"
 )
@@ -109,12 +110,17 @@ func main() {
 		h.Spin()
 	}()
 
-	// 5. 优雅退出。
+	// 5. 优雅退出:给在途请求 5s 排空窗口,超时强退(避免卡死容器停止流程,
+	//    docker stop 默认 10s 后 SIGKILL,留足余量)。
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
 	logger.Info("正在关闭服务...")
-	h.Shutdown(context.Background())
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := h.Shutdown(shutdownCtx); err != nil {
+		logger.Warn("优雅关闭超时,存在未完成的在途请求", zap.Error(err))
+	}
 	logger.Info("服务已停止")
 }

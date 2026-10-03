@@ -9,19 +9,16 @@ import (
 
 	"github.com/filescodebox/core/pkg/logger"
 
-	"github.com/zy84338719/filecodebox-fnos/adapter/internal/fnosconfig"
-	"github.com/zy84338719/filecodebox-fnos/adapter/notify"
-	"github.com/zy84338719/filecodebox-fnos/adapter/sso"
-	"github.com/zy84338719/filecodebox-fnos/adapter/storage"
-	"github.com/zy84338719/filecodebox-fnos/adapter/tunnel"
+	"github.com/filescodebox/filescodebox-fnos/adapter/internal/fnosconfig"
+	"github.com/filescodebox/filescodebox-fnos/adapter/notify"
+	"github.com/filescodebox/filescodebox-fnos/adapter/sso"
+	"github.com/filescodebox/filescodebox-fnos/adapter/storage"
+	"github.com/filescodebox/filescodebox-fnos/adapter/tunnel"
 )
 
 // 为保持调用方(main.go)接口稳定,在此重导出配置类型与加载函数。
 // 真正定义见 adapter/internal/fnosconfig。
-type (
-	Config     = fnosconfig.Config
-	LoadResult = fnosconfig.Config
-)
+type Config = fnosconfig.Config
 
 // LoadConfig 从环境变量加载飞牛适配配置(转发至 fnosconfig 包)。
 func LoadConfig() Config {
