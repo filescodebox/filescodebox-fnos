@@ -1,5 +1,5 @@
 appname=filescodebox
-version=0.3.0
+version=1.2.0
 display_name=FilesCodeBox
 platform=all
 maintainer=zhangyi
@@ -12,6 +12,7 @@ service_port=12345
 ctl_stop=true
 checkport=true
 desc=文件快递柜——匿名口令分享文本/文件,支持拖拽上传、多云存储后端;飞牛原生集成(数据落 NAS 共享目录/应用中心托管启停)。
+changelog=1.2.0: 版本号与 desktop/charts 统一起始版——内置 core v0.7.6 全能力(七段在线设置中心/14 种存储后端/公告管理)。
 changelog=0.3.0: 仓改名 fnos——镜像路径切换 ghcr.io/filescodebox/fnos(0.2.x 镜像冻结于旧路径 filescodebox-fnos),go module path 同步,compose/manifest/文档对齐。
 0.2.6: 底层 core v0.6.4 → v0.7.6——系统配置中心七段在线设置/公告管理、存储切换与全局配额、安全版主题(防 CSS 注入)、notify 定向站内信不泄露、PUT /admin/config 双形态兼容。
 0.2.5: 镜像内置默认配置——裸 docker run 开箱可用(匿名上传开放/存储路径就位,此前无 env 时上传被拒)。

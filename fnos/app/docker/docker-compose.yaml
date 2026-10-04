@@ -18,7 +18,7 @@
 #   - container_name 须与 cmd/main 的 status 检测保持一致。
 services:
   filescodebox:
-    image: ghcr.io/filescodebox/fnos:0.3
+    image: ghcr.io/filescodebox/fnos:1.2
     container_name: filescodebox
     ports:
       - "${TRIM_SERVICE_PORT}:12345"
