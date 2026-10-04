@@ -19,8 +19,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/filescodebox/core/pkg/logger"
 	"github.com/filescodebox/core/bootstrap"
+	"github.com/filescodebox/core/pkg/logger"
 	"github.com/filescodebox/fnos/adapter"
 	"github.com/filescodebox/kit/version"
 
