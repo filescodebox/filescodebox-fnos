@@ -1,5 +1,11 @@
 name: Release
-# 打 v* tag → 构建多架构镜像推 ghcr.io/filescodebox/fnos
+# 打 v* tag → 三路发布:
+#   1. release: 多架构镜像推 ghcr.io/filescodebox/fnos
+#   2. fpk + attach-fpk: fnpack 打应用包,挂本仓 Release(GITHUB_TOKEN 同仓写即可)
+#   3. attach-to-hub: 回挂 fpk 到生态主仓 filescodebox/filescodebox 的 Release(tag fnos-v*,
+#      与 desktop 回挂 desktop-v* 同模式——所有二进制产物统一在主仓 Releases 可下载;
+#      跨仓写需 FNOS_PAT(对 filescodebox/filescodebox 的 Contents:write PAT),
+#      未配置时本 job 失败放行(continue-on-error),由本地 `gh release upload` 兜底)
 # (2026-10-04 随仓改名 filescodebox-fnos → fnos 对齐;旧镜像 filescodebox-fnos 冻结在 v0.2.6,更早 filecodebox-fnos 冻结在 v0.2.1)
 on:
   push:
@@ -48,3 +54,62 @@ jobs:
             COMMIT=${{ github.sha }}
             BUILD_TIME=${{ steps.meta.outputs.date }}
             GOPROXY=https://proxy.golang.org,direct
+
+  fpk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 下载 fnpack(官方 CLI,与 ci.yml package job 同源)
+        run: |
+          curl -fsSL --retry 3 -o fnpack https://static2.fnnas.com/fnpack/fnpack-1.2.3-linux-amd64
+          chmod +x fnpack
+      - name: fnpack build
+        run: cd fnos && ../fnpack build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: filescodebox-fpk
+          path: fnos/filescodebox.fpk
+          retention-days: 14
+          if-no-files-found: error
+
+  attach-fpk:
+    needs: fpk
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: filescodebox-fpk
+          path: fpk
+      - name: 挂本仓 Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1 || \
+            gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" \
+              --title "FilesCodeBox fnOS ${GITHUB_REF_NAME}" \
+              --notes "飞牛 fnOS 应用包(见 Assets filescodebox.fpk)。镜像: ghcr.io/filescodebox/fnos(tag 跟随本 Release)。"
+          gh release upload "${GITHUB_REF_NAME}" fpk/filescodebox.fpk --repo "${GITHUB_REPOSITORY}" --clobber
+
+  attach-to-hub:
+    needs: fpk
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: filescodebox-fpk
+          path: fpk
+      - name: 回挂 fpk 到生态主仓
+        env:
+          GH_TOKEN: ${{ secrets.FNOS_PAT || secrets.GITHUB_TOKEN }}
+          TAG: fnos-${{ github.ref_name }}
+          VER: ${{ github.ref_name }}
+        run: |
+          gh release view "${TAG}" --repo filescodebox/filescodebox >/dev/null 2>&1 || \
+            gh release create "${TAG}" --repo filescodebox/filescodebox \
+              --title "FilesCodeBox fnOS ${VER}" \
+              --notes "飞牛 fnOS 应用包(见 Assets)。镜像: ghcr.io/filescodebox/fnos。服务器部署见主 README。"
+          gh release upload "${TAG}" fpk/filescodebox.fpk --repo filescodebox/filescodebox --clobber
+          echo "已回挂到 filescodebox/filescodebox Releases"
