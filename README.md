@@ -41,7 +41,7 @@
 
 ## 安装（飞牛 fnOS）
 
-1. 从 [Releases](https://github.com/filescodebox/fnos/releases) 下载 `filescodebox.fpk`（或自行 [打包](#打包fpk)）
+1. 从 hub 仓 [Releases](https://github.com/filescodebox/filescodebox/releases) 下载 `fnos-v*` 资产中的 `filescodebox.fpk`（或自行 [打包](#打包fpk)）
 2. 飞牛应用中心 → 手动安装 → 上传 fpk，按向导完成安装（飞牛凭证可留空，随时在应用设置补填）
 3. 桌面入口打开即用；数据在应用数据目录（NAS 共享路径）下的 `data/`（业务）与 `redis/`（取件码）
 
@@ -53,7 +53,7 @@
 docker run -d --name filescodebox -p 12345:12345 \
   -v ./data:/app/data \
   -e FCB_SERVER_HOST=0.0.0.0 -e FCB_PRODUCTION=1 \
-  ghcr.io/filescodebox/fnos:0.3
+  ghcr.io/filescodebox/fnos:1.2
 ```
 
 完整编排（含 Redis、健康检查、密钥引导）见 [`fnos/app/docker/docker-compose.yaml`](fnos/app/docker/docker-compose.yaml)。
@@ -67,14 +67,14 @@ cd fnos && fnpack build     # 产物 filescodebox.fpk
 
 `fnos/` 目录即应用包定义，**已对齐飞牛官方规范**（manifest / app/docker / app/ui 入口+图标 / cmd 生命周期脚本 / wizard 向导 / config 资源与权限）。CI 每次推送都会跑 `fnpack build` 校验并产出 fpk 构件。
 
-注意：compose 内镜像 tag 写死 major.minor（如 `0.3`），发版时须与 `manifest` 的 `version` 同步更新。
+注意：compose 内镜像 tag 写死 major.minor（如 `1.2`），发版时须与 `manifest` 的 `version` 同步更新。
 
 ## 本地开发
 
 本仓已纳入 [filescodebox](https://github.com/filescodebox/filescodebox) 装配仓的 `go.work`：
 
 ```bash
-# 工作区内(hub 根 make setup 拉齐五仓后):联编本地 core main
+# 工作区内(hub 根 make setup 拉齐全部模块仓后):联编本地 core main
 cd fnos && go build ./... && go test ./...
 
 # 独立构建:钉 go.mod 正式版本(与 CI/Docker 一致)
@@ -112,6 +112,7 @@ fnos/
 
 | 本仓 | core | 说明 |
 |------|------|------|
+| v1.2.0 | v0.7.6 | 版本号与 desktop/charts 统一起始版；compose 镜像 tag 对齐 major.minor `:1.2` |
 | v0.3.x | v0.7.6 | 仓改名 fnos——镜像路径切换 `ghcr.io/filescodebox/fnos`，go module path 同步 |
 | v0.2.x | v0.5.0 → v0.7.6 | 上传治理/多云存储/P0 修复；fnpack 规范化 + 内置 Redis + 向导；0.2.6 升 core v0.7.6 |
 
