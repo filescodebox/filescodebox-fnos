@@ -14,10 +14,11 @@
 #     同款教训)。不用 fnOS 系统 redis 中间件:桥接网络容器无法访问宿主 127.0.0.1。
 #   - 镜像 tag 写死 major.minor:官方 compose 占位符不含版本变量(参照官方 Docker 应用
 #     案例),major.minor 升级时须与本行同步(与 manifest.version 同批发)。
+#     0.2.x 时代镜像路径为 ghcr.io/filescodebox/filescodebox-fnos,仓改名 fnos 后冻结。
 #   - container_name 须与 cmd/main 的 status 检测保持一致。
 services:
   filescodebox:
-    image: ghcr.io/filescodebox/filescodebox-fnos:0.2
+    image: ghcr.io/filescodebox/fnos:0.3
     container_name: filescodebox
     ports:
       - "${TRIM_SERVICE_PORT}:12345"

@@ -1,13 +1,13 @@
 name: Release
-# 打 v* tag → 构建多架构镜像推 ghcr.io/filescodebox/filescodebox-fnos
-# (2026-10-03 随仓库改名对齐;旧镜像 ghcr.io/filescodebox/filecodebox-fnos 冻结在 v0.2.1)
+# 打 v* tag → 构建多架构镜像推 ghcr.io/filescodebox/fnos
+# (2026-10-04 随仓改名 filescodebox-fnos → fnos 对齐;旧镜像 filescodebox-fnos 冻结在 v0.2.6,更早 filecodebox-fnos 冻结在 v0.2.1)
 on:
   push:
     tags: ["v*"]
 
 env:
   REGISTRY: ghcr.io
-  IMAGE: ghcr.io/filescodebox/filescodebox-fnos
+  IMAGE: ghcr.io/filescodebox/fnos
 
 jobs:
   release:

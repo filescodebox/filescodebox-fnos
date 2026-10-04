@@ -14,7 +14,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/filescodebox/filescodebox-fnos/adapter/internal/fnosconfig"
+	"github.com/filescodebox/fnos/adapter/internal/fnosconfig"
 )
 
 // Client 飞牛 Open API client。

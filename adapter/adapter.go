@@ -9,11 +9,11 @@ import (
 
 	"github.com/filescodebox/core/pkg/logger"
 
-	"github.com/filescodebox/filescodebox-fnos/adapter/internal/fnosconfig"
-	"github.com/filescodebox/filescodebox-fnos/adapter/notify"
-	"github.com/filescodebox/filescodebox-fnos/adapter/sso"
-	"github.com/filescodebox/filescodebox-fnos/adapter/storage"
-	"github.com/filescodebox/filescodebox-fnos/adapter/tunnel"
+	"github.com/filescodebox/fnos/adapter/internal/fnosconfig"
+	"github.com/filescodebox/fnos/adapter/notify"
+	"github.com/filescodebox/fnos/adapter/sso"
+	"github.com/filescodebox/fnos/adapter/storage"
+	"github.com/filescodebox/fnos/adapter/tunnel"
 )
 
 // 为保持调用方(main.go)接口稳定,在此重导出配置类型与加载函数。

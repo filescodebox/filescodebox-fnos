@@ -1,4 +1,4 @@
-module github.com/filescodebox/filescodebox-fnos
+module github.com/filescodebox/fnos
 
 go 1.26.5
 

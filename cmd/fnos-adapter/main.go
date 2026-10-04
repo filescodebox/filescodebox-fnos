@@ -21,7 +21,7 @@ import (
 
 	"github.com/filescodebox/core/pkg/logger"
 	"github.com/filescodebox/core/bootstrap"
-	"github.com/filescodebox/filescodebox-fnos/adapter"
+	"github.com/filescodebox/fnos/adapter"
 
 	"go.uber.org/zap"
 )

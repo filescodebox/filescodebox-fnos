@@ -17,7 +17,7 @@ import (
 
 	"github.com/filescodebox/core/pkg/logger"
 
-	"github.com/filescodebox/filescodebox-fnos/adapter/internal/fnosconfig"
+	"github.com/filescodebox/fnos/adapter/internal/fnosconfig"
 )
 
 // Mount 在飞牛路由组上挂载 SSO 子路由。

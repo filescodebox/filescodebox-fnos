@@ -13,7 +13,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/cloudwego/hertz/pkg/route"
 
-	"github.com/filescodebox/filescodebox-fnos/adapter/internal/fnosconfig"
+	"github.com/filescodebox/fnos/adapter/internal/fnosconfig"
 )
 
 // Mount 在飞牛路由组上挂载内网穿透子路由。

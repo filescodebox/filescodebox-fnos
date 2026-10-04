@@ -1,6 +1,6 @@
-# filescodebox-fnos
+# fnos
 
-[![CI](https://github.com/filescodebox/filescodebox-fnos/actions/workflows/ci.yml/badge.svg)](https://github.com/filescodebox/filescodebox-fnos/actions/workflows/ci.yml)
+[![CI](https://github.com/filescodebox/fnos/actions/workflows/ci.yml/badge.svg)](https://github.com/filescodebox/fnos/actions/workflows/ci.yml)
 
 > [FilesCodeBox](https://github.com/filescodebox/filescodebox)（文件快递柜）的飞牛 fnOS 应用适配层——单容器库式集成 FilesCodeBox 全部业务，包装为可在飞牛 NAS 应用中心安装的第三方应用，并接入飞牛 Open API。
 
@@ -37,11 +37,11 @@
 
 ## 安装（飞牛 fnOS）
 
-1. 从 [Releases](https://github.com/filescodebox/filescodebox-fnos/releases) 下载 `filescodebox.fpk`（或自行 [打包](#打包fpk)）
+1. 从 [Releases](https://github.com/filescodebox/fnos/releases) 下载 `filescodebox.fpk`（或自行 [打包](#打包fpk)）
 2. 飞牛应用中心 → 手动安装 → 上传 fpk，按向导完成安装（飞牛凭证可留空，随时在应用设置补填）
 3. 桌面入口打开即用；数据在应用数据目录（NAS 共享路径）下的 `data/`（业务）与 `redis/`（取件码）
 
-> 要求：fnOS 设备可拉取 `ghcr.io/filescodebox/filescodebox-fnos`（x86/ARM 均可，镜像多架构）。
+> 要求：fnOS 设备可拉取 `ghcr.io/filescodebox/fnos`（x86/ARM 均可，镜像多架构）。
 
 ## Docker 直接部署（不经飞牛应用中心）
 
@@ -49,7 +49,7 @@
 docker run -d --name filescodebox -p 12345:12345 \
   -v ./data:/app/data \
   -e FCB_SERVER_HOST=0.0.0.0 -e FCB_PRODUCTION=1 \
-  ghcr.io/filescodebox/filescodebox-fnos:0.2
+  ghcr.io/filescodebox/fnos:0.3
 ```
 
 完整编排（含 Redis、健康检查、密钥引导）见 [`fnos/app/docker/docker-compose.yaml`](fnos/app/docker/docker-compose.yaml)。
@@ -63,7 +63,7 @@ cd fnos && fnpack build     # 产物 filescodebox.fpk
 
 `fnos/` 目录即应用包定义，**已对齐飞牛官方规范**（manifest / app/docker / app/ui 入口+图标 / cmd 生命周期脚本 / wizard 向导 / config 资源与权限）。CI 每次推送都会跑 `fnpack build` 校验并产出 fpk 构件。
 
-注意：compose 内镜像 tag 写死 major.minor（如 `0.2`），发版时须与 `manifest` 的 `version` 同步更新。
+注意：compose 内镜像 tag 写死 major.minor（如 `0.3`），发版时须与 `manifest` 的 `version` 同步更新。
 
 ## 本地开发
 
@@ -71,7 +71,7 @@ cd fnos && fnpack build     # 产物 filescodebox.fpk
 
 ```bash
 # 工作区内(hub 根 make setup 拉齐五仓后):联编本地 core main
-cd filecodebox-fnos && go build ./... && go test ./...
+cd fnos && go build ./... && go test ./...
 
 # 独立构建:钉 go.mod 正式版本(与 CI/Docker 一致)
 GOWORK=off go test ./...
@@ -88,7 +88,7 @@ FNOS_ENABLED=true FNOS_APPID=xxx FNOS_APPSECRET=yyy go run ./cmd/fnos-adapter
 ## 目录结构
 
 ```
-filescodebox-fnos/
+fnos/
 ├─ cmd/fnos-adapter/            容器入口:JWT 密钥引导 + 库式拉起 + 挂载 adapter
 ├─ adapter/                     飞牛 Open API 适配层(/api/fnos/*)
 │  ├─ internal/fnosconfig/      配置加载(独立子包,无环)
@@ -108,9 +108,10 @@ filescodebox-fnos/
 
 | 本仓 | core | 说明 |
 |------|------|------|
-| v0.2.x | v0.5.0 | 上传治理/多云存储/P0 修复；fnpack 规范化 + 内置 Redis + 向导 |
+| v0.3.x | v0.7.6 | 仓改名 fnos——镜像路径切换 `ghcr.io/filescodebox/fnos`，go module path 同步 |
+| v0.2.x | v0.5.0 → v0.7.6 | 上传治理/多云存储/P0 修复；fnpack 规范化 + 内置 Redis + 向导；0.2.6 升 core v0.7.6 |
 
-镜像：`ghcr.io/filescodebox/filescodebox-fnos`（tag 跟随 Release；`0.1.x` 时代镜像名为 `filecodebox-fnos`，已冻结）。
+镜像：`ghcr.io/filescodebox/fnos`（tag 跟随 Release；`0.2.x` 及更早镜像名为 `filescodebox-fnos`、`0.1.x` 为 `filecodebox-fnos`，均已冻结）。
 
 ## 路线图
 

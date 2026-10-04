@@ -21,7 +21,7 @@ fpack:            ## 飞牛应用包(需 fnpack 二进制, developer.fnnas.com/d
 	@echo "✓ 产物 fnos/filescodebox.fpk"
 
 docker:           ## 构建容器镜像(上下文=本仓库,依赖走 module proxy)
-	docker build -t filescodebox-fnos:latest .
+	docker build -t fnos:latest .
 
 clean:
 	rm -rf bin/ fnos/*.fpk
