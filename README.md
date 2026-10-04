@@ -1,8 +1,12 @@
 # fnos
 
 [![CI](https://github.com/filescodebox/fnos/actions/workflows/ci.yml/badge.svg)](https://github.com/filescodebox/fnos/actions/workflows/ci.yml)
+[![Tag](https://img.shields.io/github/v/tag/filescodebox/fnos)](https://github.com/filescodebox/fnos/tags)
+[![License](https://img.shields.io/github/license/filescodebox/fnos)](LICENSE)
 
 > [FilesCodeBox](https://github.com/filescodebox/filescodebox)（文件快递柜）的飞牛 fnOS 应用适配层——单容器库式集成 FilesCodeBox 全部业务，包装为可在飞牛 NAS 应用中心安装的第三方应用，并接入飞牛 Open API。
+
+> 🗂️ [FilesCodeBox 生态](https://github.com/orgs/filescodebox)成员仓 · 应用包统一发布在 [hub 仓 Releases](https://github.com/filescodebox/filescodebox/releases)（`fnos-v*` 资产）
 
 ## 特性
 
@@ -123,3 +127,7 @@ fnos/
 ## 相关仓库
 
 [filescodebox](https://github.com/filescodebox/filescodebox)（装配仓）· [core](https://github.com/filescodebox/core)（业务核心）· [server](https://github.com/filescodebox/server)（独立部署壳）· [frontend](https://github.com/filescodebox/frontend) · [charts](https://github.com/filescodebox/charts)（Helm）
+
+## License
+
+[Apache-2.0](LICENSE)
