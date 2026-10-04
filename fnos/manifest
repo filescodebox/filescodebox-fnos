@@ -1,5 +1,5 @@
 appname=filescodebox
-version=0.2.5
+version=0.2.6
 display_name=FilesCodeBox
 platform=all
 maintainer=zhangyi
@@ -12,7 +12,8 @@ service_port=12345
 ctl_stop=true
 checkport=true
 desc=文件快递柜——匿名口令分享文本/文件,支持拖拽上传、多云存储后端;飞牛原生集成(数据落 NAS 共享目录/应用中心托管启停)。
-changelog=0.2.5: 镜像内置默认配置——裸 docker run 开箱可用(匿名上传开放/存储路径就位,此前无 env 时上传被拒)。
+changelog=0.2.6: 底层 core v0.6.4 → v0.7.6——系统配置中心七段在线设置/公告管理、存储切换与全局配额、安全版主题(防 CSS 注入)、notify 定向站内信不泄露、PUT /admin/config 双形态兼容。
+0.2.5: 镜像内置默认配置——裸 docker run 开箱可用(匿名上传开放/存储路径就位,此前无 env 时上传被拒)。
 0.2.4: 底层 core v0.6.4——分片完成 hotfix/元数据查询/本地文件管理/openapi 运行时生成/假开关清理。
 0.2.2: 对齐飞牛官方打包规范,内置 Redis 修复匿名取件,新增飞牛凭证安装向导。
 source=thirdparty
