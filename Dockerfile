@@ -33,9 +33,9 @@ ARG BUILD_TIME=unknown
 # 编译(静态链接 musl,CGO_ENABLED=1 for sqlite)
 RUN CGO_ENABLED=1 go build \
     -ldflags="-w -s \
-    -X 'main.Version=${VERSION}' \
-    -X 'main.Commit=${COMMIT}' \
-    -X 'main.BuildTime=${BUILD_TIME}'" \
+    -X 'github.com/filescodebox/kit/version.Version=${VERSION}' \
+    -X 'github.com/filescodebox/kit/version.BuildCommit=${COMMIT}' \
+    -X 'github.com/filescodebox/kit/version.BuildTime=${BUILD_TIME}'" \
     -o /out/fnos-adapter ./cmd/fnos-adapter
 
 # ========== Stage 2: 运行时镜像 ==========

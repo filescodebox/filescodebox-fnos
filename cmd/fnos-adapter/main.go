@@ -22,16 +22,12 @@ import (
 	"github.com/filescodebox/core/pkg/logger"
 	"github.com/filescodebox/core/bootstrap"
 	"github.com/filescodebox/fnos/adapter"
+	"github.com/filescodebox/kit/version"
 
 	"go.uber.org/zap"
 )
 
-// 版本信息(由 Dockerfile -ldflags -X 注入,缺省为 dev)。
-var (
-	Version   = "dev"
-	Commit    = "unknown"
-	BuildTime = "unknown"
-)
+// 版本信息:kit/version 包内变量,由 Dockerfile -ldflags -X 注入,缺省为 dev。
 
 // ensureJWTSecret 保证 FCB_JWT_SECRET 存在:未显式配置时自动生成强密钥,
 // 持久化到数据目录(.jwt_secret,权限 0600),重启复用(已签发 token 不失效)。
@@ -106,7 +102,9 @@ func main() {
 
 	// 4. 启动 HTTP 服务。
 	go func() {
-		logger.Info("FileCodeBox 飞牛应用启动中...")
+		logger.Info("FileCodeBox 飞牛应用启动中...",
+			zap.String("version", version.Version),
+			zap.String("commit", version.BuildCommit))
 		h.Spin()
 	}()
 
