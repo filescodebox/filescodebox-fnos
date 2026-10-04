@@ -4,7 +4,7 @@
 # 并挂载飞牛 Open API 适配层(SSO/共享目录/通知/内网穿透)。
 #
 # 构建上下文为本仓库即可(core/contracts 经 go.mod 正式版本从 module proxy 拉取)。
-#   cd filecodebox-fnos && docker build -t filecodebox-fnos:latest .
+#   cd fnos && docker build -t fnos:latest .
 # GOPROXY 可用 --build-arg GOPROXY=... 覆盖(默认国内加速;海外 CI 传空走默认)。
 
 # ========== Stage 1: 构建 fnos-adapter(含 FileCodeBox 库) ==========
@@ -17,7 +17,7 @@ ENV GOPROXY=${GOPROXY}
 # 此处保留 gcc/musl-dev 以备未来切换 CGO 驱动,不影响当前纯 Go 构建。
 RUN apk add --no-cache gcc musl-dev sqlite-dev git ca-certificates tzdata
 
-WORKDIR /workspace/filecodebox-fnos
+WORKDIR /workspace/fnos
 
 # 先复制模块描述再下载依赖(利用层缓存)
 COPY go.mod go.sum ./
