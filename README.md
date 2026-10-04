@@ -112,6 +112,7 @@ fnos/
 
 | 本仓 | core | 说明 |
 |------|------|------|
+| v1.2.1 | v0.8.0 | core 对齐（P2P 联邦接入；fnos 依赖面仅 bootstrap+logger，行为无变化） |
 | v1.2.0 | v0.7.6 | 版本号与 desktop/charts 统一起始版；compose 镜像 tag 对齐 major.minor `:1.2` |
 | v0.3.x | v0.7.6 | 仓改名 fnos——镜像路径切换 `ghcr.io/filescodebox/fnos`，go module path 同步 |
 | v0.2.x | v0.5.0 → v0.7.6 | 上传治理/多云存储/P0 修复；fnpack 规范化 + 内置 Redis + 向导；0.2.6 升 core v0.7.6 |

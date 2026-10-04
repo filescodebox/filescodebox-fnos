@@ -4,7 +4,7 @@ go 1.26.5
 
 require (
 	github.com/cloudwego/hertz v0.9.6
-	github.com/filescodebox/core v0.7.6
+	github.com/filescodebox/core v0.8.0
 	github.com/stretchr/testify v1.12.1
 	go.uber.org/zap v1.27.0
 )
