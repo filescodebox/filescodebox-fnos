@@ -112,6 +112,7 @@ fnos/
 
 | 本仓 | core | 说明 |
 |------|------|------|
+| v1.2.3 | v0.11.0 | 跟随 core v0.11.0（Cookie 会话）；默认关闭开放注册（管理员建号） |
 | v1.2.2 | v0.10.0 | 跟随 core v0.10.0 安全审计加固；测试 -race 门禁；版本注入上收 kit/version |
 | v1.2.1 | v0.8.0 | core 对齐（P2P 联邦接入；fnos 依赖面仅 bootstrap+logger，行为无变化） |
 | v1.2.0 | v0.7.6 | 版本号与 desktop/charts 统一起始版；compose 镜像 tag 对齐 major.minor `:1.2` |
