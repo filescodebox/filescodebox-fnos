@@ -114,7 +114,7 @@ jobs:
           path: fpk
       - name: 回挂 fpk 到生态主仓
         env:
-          GH_TOKEN: ${{ secrets.FNOS_PAT || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.FNOS_PAT }}
           TAG: fnos-${{ inputs.version || github.ref_name }}
           VER: ${{ inputs.version || github.ref_name }}
         run: |
