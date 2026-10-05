@@ -26,7 +26,7 @@ storage:
 log:
   level: "info"
 user:
-  allow_user_registration: true
+  allow_user_registration: false  # NAS 场景默认关闭开放注册（管理员建号）；如需开放改 true
 observability:
   metrics:
     enabled: false
