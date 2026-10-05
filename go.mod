@@ -4,7 +4,8 @@ go 1.26.5
 
 require (
 	github.com/cloudwego/hertz v0.9.6
-	github.com/filescodebox/core v0.8.0
+	github.com/filescodebox/core v0.10.0
+	github.com/filescodebox/kit v0.3.0
 	github.com/stretchr/testify v1.12.1
 	go.uber.org/zap v1.27.0
 )
@@ -18,12 +19,10 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/cloudwego/netpoll v0.6.4 // indirect
-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/filescodebox/contracts v0.2.1 // indirect
-	github.com/filescodebox/kit v0.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/glebarez/go-sqlite v1.21.2 // indirect
 	github.com/glebarez/sqlite v1.11.0 // indirect
