@@ -10,8 +10,10 @@
 # 设计:
 #   - 数据(上传文件 + SQLite + Redis AOF)全部落在 ${TRIM_PKGVAR} 下,即用户可见的
 #     NAS 共享文件夹,可在飞牛文件管理中直接查看、备份、迁移。
-#   - 内置 redis:取件码/匿名分享映射必需(无 redis 时匿名取件全 500,与 215 部署
-#     同款教训)。不用 fnOS 系统 redis 中间件:桥接网络容器无法访问宿主 127.0.0.1。
+#   - 内置 redis:取件码映射的持久化依赖(AOF 保重启不丢未取件码)。core 单机内存
+#     模式列车后,置空 FCB_REDIS_HOST 也可全功能运行(进程内 KV,重启丢失映射)——
+#     但 NAS 场景建议保留内置 redis。不用 fnOS 系统 redis 中间件:桥接网络容器
+#     无法访问宿主 127.0.0.1。
 #   - 镜像 tag 写死 major.minor:官方 compose 占位符不含版本变量(参照官方 Docker 应用
 #     案例),major.minor 升级时须与本行同步(与 manifest.version 同批发)。
 #     0.2.x 时代镜像路径为 ghcr.io/filescodebox/filescodebox-fnos,仓改名 fnos 后冻结。
@@ -35,7 +37,8 @@ services:
       - FCB_DATABASE_DB_NAME=/app/data/fileCodeBox.db
       - FCB_OPEN_UPLOAD=true
       # 缺省指向本编排内的 redis 服务;要禁用设 FCB_REDIS_HOST= 为空
-      # (禁用后匿名取件/文件直传分享不可用,文本分享与账号体系不受影响)
+      # (core 内存模式列车起,置空=单机内存模式:匿名取件仍可用、重启丢失映射;
+      #  此前镜像置空=匿名取件不可用,文本分享与账号体系不受影响)
       - FCB_REDIS_HOST=${FCB_REDIS_HOST:-redis}
       - FCB_REDIS_PORT=6379
       # 飞牛 Open API 凭证(缺省时应用以降级模式运行,飞牛能力关闭,业务正常)
