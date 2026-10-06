@@ -14,8 +14,8 @@
 |------|------|------|
 | **一键安装** | `fnpack` 标准应用包，应用中心托管启停/升级 | ✅ fnpack 1.2.3 打包通过 |
 | **业务全功能** | 单进程库式调用 [core](https://github.com/filescodebox/core) `bootstrap.Bootstrap()`，文本/文件分享、取件码、多云存储全部可用 | ✅ |
-| **数据落 NAS** | 上传文件 + SQLite + Redis AOF 全部落在用户可见的共享目录，文件管理器可直接查看/备份 | ✅ |
-| **开箱即用** | JWT 密钥自动生成并持久化；内置 Redis（取件码映射持久化，保重启不丢；core 内存模式列车后置空亦可全功能运行）；安装向导收集可选凭证 | ✅ |
+| **数据落 NAS** | 上传文件 + SQLite 全部落在用户可见的共享目录，文件管理器可直接查看/备份 | ✅ |
+| **开箱即用** | JWT 密钥自动生成并持久化；默认免 Redis（core v0.14.0 单机内存模式，取件码映射存进程内、重启/升级失效）；安装向导收集可选凭证 | ✅ |
 | **降级模式** | 未配置飞牛凭证时，飞牛集成关闭、业务完整运行 | ✅ |
 | **SSO 免登录** | 飞牛账号一键登录映射为本系统用户 | 🔜 待凭证 |
 | **通知中心** | 分享事件推送飞牛通知 | 🔜 待凭证 |
@@ -32,7 +32,7 @@
                 │                          (SSO/目录/通知/穿透)                 │
                 └──────────────────────────────────────────────────────────────┘
                      │                                            │
-        /app/data ◄──┘ (上传文件+SQLite+JWT密钥)      /app/data ◄── redis AOF
+        /app/data ◄──┘ (上传文件+SQLite+JWT密钥)      取件码映射 ◄── 进程内内存
                      └────────────── ${TRIM_PKGVAR} ──────┘ (NAS 共享目录)
 ```
 
@@ -43,7 +43,7 @@
 
 1. 从 hub 仓 [Releases](https://github.com/filescodebox/filescodebox/releases) 下载 `fnos-v*` 资产中的 `filescodebox.fpk`（或自行 [打包](#打包fpk)）
 2. 飞牛应用中心 → 手动安装 → 上传 fpk，按向导完成安装（飞牛凭证可留空，随时在应用设置补填）
-3. 桌面入口打开即用；数据在应用数据目录（NAS 共享路径）下的 `data/`（业务）与 `redis/`（取件码）
+3. 桌面入口打开即用；数据在应用数据目录（NAS 共享路径）下的 `data/`（上传文件/SQLite/JWT 密钥；取件码映射存进程内存，无独立文件）
 
 > 要求：fnOS 设备可拉取 `ghcr.io/filescodebox/fnos`（x86/ARM 均可，镜像多架构）。
 
@@ -56,7 +56,7 @@ docker run -d --name filescodebox -p 12345:12345 \
   ghcr.io/filescodebox/fnos:1.2
 ```
 
-完整编排（含 Redis、健康检查、密钥引导）见 [`fnos/app/docker/docker-compose.yaml`](fnos/app/docker/docker-compose.yaml)。
+完整编排（健康检查、密钥引导）见 [`fnos/app/docker/docker-compose.yaml`](fnos/app/docker/docker-compose.yaml)。
 
 ## 打包 .fpk
 
@@ -100,7 +100,7 @@ fnos/
 │  └─ sso/ storage/ notify/ tunnel/   各能力模块(凭证就绪后填实)
 ├─ fnos/                        飞牛 .fpk 应用包定义(官方规范)
 │  ├─ manifest                  应用元数据(version/platform/入口/端口)
-│  ├─ app/docker/               容器编排(app + 内置 redis,官方 TRIM_* 占位符)
+│  ├─ app/docker/               容器编排(app 单服务,官方 TRIM_* 占位符)
 │  ├─ app/ui/                   桌面入口(config)与图标(images/)
 │  ├─ cmd/                      生命周期脚本(install/upgrade/uninstall/config)
 │  ├─ wizard/                   安装/配置向导(飞牛凭证与 JWT 密钥)

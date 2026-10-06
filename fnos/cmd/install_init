@@ -1,9 +1,8 @@
 #!/bin/bash
 # 安装前置:初始化数据目录归属
 # - data/ 归容器内应用进程(Dockerfile 中固定 uid 1000)
-# - redis/ 归官方 redis 镜像运行用户(uid 999);取件码/匿名分享映射必需
+# - 取件码映射走 core 单机内存模式(1.2.5 起默认免 Redis,无独立数据目录)
 set -e
-mkdir -p "${TRIM_PKGVAR}/data" "${TRIM_PKGVAR}/redis"
+mkdir -p "${TRIM_PKGVAR}/data"
 chown -R 1000:1000 "${TRIM_PKGVAR}/data"
-chown -R 999:999 "${TRIM_PKGVAR}/redis"
 echo "data dirs ready under ${TRIM_PKGVAR}"

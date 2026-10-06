@@ -1,9 +1,8 @@
 #!/bin/bash
 # 升级前置:复确认数据目录归属
 # - data/ 归容器内应用进程(固定 uid 1000,数据卷跨版本沿用)
-# - redis/ 归官方 redis 镜像运行用户(uid 999)
+# - 1.2.4 及以前内置的 redis/ 目录不再使用,保留在盘上无害,用户可自行清理
 set -e
-mkdir -p "${TRIM_PKGVAR}/data" "${TRIM_PKGVAR}/redis"
+mkdir -p "${TRIM_PKGVAR}/data"
 chown -R 1000:1000 "${TRIM_PKGVAR}/data"
-chown -R 999:999 "${TRIM_PKGVAR}/redis"
 exit 0

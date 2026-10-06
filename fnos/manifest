@@ -1,5 +1,5 @@
 appname=filescodebox
-version=1.2.3
+version=1.2.5
 display_name=FilesCodeBox
 platform=all
 maintainer=zhangyi
@@ -12,6 +12,8 @@ service_port=12345
 ctl_stop=true
 checkport=true
 desc=文件快递柜——匿名口令分享文本/文件,支持拖拽上传、多云存储后端;飞牛原生集成(数据落 NAS 共享目录/应用中心托管启停)。
+changelog=1.2.5: 默认关闭内置 Redis——取件码映射走 core v0.14.0 单机内存模式(免 Redis 全功能;重启/升级后未取件的取件码失效,8 位分享码不受影响)。
+changelog=1.2.4: 底层 core v0.11.0 → v0.14.0 跟随(单机内存模式列车,跨越 v0.12/v0.13 部署拆分)。
 changelog=1.2.3: 底层 core v0.10.0 → v0.11.0 跟随(Cookie 会话);默认关闭开放注册(管理员建号)。
 changelog=1.2.2: 底层 core v0.8.0 → v0.10.0 跟随(安全审计加固);测试 -race 门禁;版本注入上收 kit/version。
 changelog=1.2.1: 底层 core v0.7.6 → v0.8.0 对齐(P2P 联邦接入;fnos 依赖面仅 bootstrap+logger,行为无变化)。
