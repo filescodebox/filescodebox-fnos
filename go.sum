@@ -9,8 +9,6 @@ github.com/bsm/ginkgo/v2 v2.12.0/go.mod h1:SwYbGRRDovPVboqFv0tPTcG1sN61LM1Z4ARdb
 github.com/bsm/gomega v1.27.10 h1:yeMWxP2pV2fG3FgAODIY8EiRE3dy0aeFYt4l7wh6yKA=
 github.com/bsm/gomega v1.27.10/go.mod h1:JyEr/xRbxbtgWNi8tIEVPUYZ5Dzef52k01W3YH0H+O0=
 github.com/bytedance/gopkg v0.1.0/go.mod h1:FtQG3YbQG9L/91pbKSw787yBQPutC+457AvDW77fgUQ=
-github.com/bytedance/gopkg v0.1.3 h1:TPBSwH8RsouGCBcMBktLt1AymVo2TVsBVCY4b6TnZ/M=
-github.com/bytedance/gopkg v0.1.3/go.mod h1:576VvJ+eJgyCzdjS+c4+77QF3p7ubbtiKARP3TxducM=
 github.com/bytedance/gopkg v0.1.4 h1:oZnQwnX82KAIWb7033bEwtxvTqXcYMxDBaQxo5JJHWM=
 github.com/bytedance/gopkg v0.1.4/go.mod h1:v1zWfPm21Fb+OsyXN2VAHdL6TBb2L88anLQgdyje6R4=
 github.com/bytedance/mockey v1.2.12 h1:aeszOmGw8CPX8CRx1DZ/Glzb1yXvhjDh6jdFBNZjsU4=
@@ -37,14 +35,10 @@ github.com/disintegration/imaging v1.6.2 h1:w1LecBlG2Lnp8B3jk5zSuNqd7b4DXhcjwek1
 github.com/disintegration/imaging v1.6.2/go.mod h1:44/5580QXChDfwIclfc/PCwrr44amcmDAg8hxG0Ewe4=
 github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
-github.com/filescodebox/contracts v0.2.1 h1:EcAqEiC27W4SdgQwgEHtmzhPwvz5VR3utlIzHrTJsX8=
-github.com/filescodebox/contracts v0.2.1/go.mod h1:gnFnut5c+SdtJbo9p/JAtp1VIMVSq25GEA/4AU38N8I=
 github.com/filescodebox/contracts v0.6.5 h1:FQvilKFVj9a5BlL6IqKYheEpsKEEEr1Wk23IHQoi7dw=
 github.com/filescodebox/contracts v0.6.5/go.mod h1:0haN4qXlJuCIZj9gZ+5fMah2v0yqVm0X36EP6gIHA/4=
-github.com/filescodebox/core v0.11.0 h1:z75qFsdZzqADJESHRHmATCyK2tTMFUbMNTRz6oeaud0=
-github.com/filescodebox/core v0.11.0/go.mod h1:prjOrekovNIkLDOqmePdCVoCMjybmAkNakOKmUQxYsE=
-github.com/filescodebox/core v0.14.0 h1:p4T8lIi/gTmyJn3B/WIx/rdP1a7nRlAoSqeH9YJR4m4=
-github.com/filescodebox/core v0.14.0/go.mod h1:hrnHinq2mOeckDYrrvcdcrtb4ydecxp5imdNWZlbEpc=
+github.com/filescodebox/core v0.14.1 h1:KGkg8zvdkpSrc2zK3UpfiV8tJ8jTh0W7egVO7BvWK6E=
+github.com/filescodebox/core v0.14.1/go.mod h1:hrnHinq2mOeckDYrrvcdcrtb4ydecxp5imdNWZlbEpc=
 github.com/filescodebox/kit v0.3.0 h1:zSgkUf374sz2gMG3NQKnPCUMfW2FeWUdYFg569fptTA=
 github.com/filescodebox/kit v0.3.0/go.mod h1:NMxlXOIe85WrFGyP8kk6vG/WiwvyIMSdX7SRcXgOlg4=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
