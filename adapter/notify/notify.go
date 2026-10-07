@@ -1,17 +1,17 @@
 // Package notify 实现飞牛"通知中心"适配。
 //
-// 设计:以独立 client 形式供 FileCodeBox 通知模块调用(非 HTTP 路由)。
-// 不侵入 FileCodeBox 通知抽象:adapter 侧维护一个 fnos channel,
+// 设计:以独立 client 形式供 PigeonBox 通知模块调用(非 HTTP 路由)。
+// 不侵入 PigeonBox 通知抽象:adapter 侧维护一个 fnos channel,
 // 业务侧配置通知通道为 "fnos" 时,经此 client 推送到飞牛通知中心。
 //
 // 本期为桩:Send 的真实推送待凭证就绪后补全。
 package notify
 
 import (
-	"github.com/filescodebox/core/pkg/logger"
+	"github.com/pigeonbox/core/pkg/logger"
 	"go.uber.org/zap"
 
-	"github.com/filescodebox/fnos/adapter/internal/fnosconfig"
+	"github.com/pigeonbox/fnos/adapter/internal/fnosconfig"
 )
 
 // Init 初始化飞牛通知 channel。

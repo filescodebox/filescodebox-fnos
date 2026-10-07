@@ -7,13 +7,13 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	"github.com/filescodebox/core/pkg/logger"
+	"github.com/pigeonbox/core/pkg/logger"
 
-	"github.com/filescodebox/fnos/adapter/internal/fnosconfig"
-	"github.com/filescodebox/fnos/adapter/notify"
-	"github.com/filescodebox/fnos/adapter/sso"
-	"github.com/filescodebox/fnos/adapter/storage"
-	"github.com/filescodebox/fnos/adapter/tunnel"
+	"github.com/pigeonbox/fnos/adapter/internal/fnosconfig"
+	"github.com/pigeonbox/fnos/adapter/notify"
+	"github.com/pigeonbox/fnos/adapter/sso"
+	"github.com/pigeonbox/fnos/adapter/storage"
+	"github.com/pigeonbox/fnos/adapter/tunnel"
 )
 
 // 为保持调用方(main.go)接口稳定,在此重导出配置类型与加载函数。
@@ -25,10 +25,10 @@ func LoadConfig() Config {
 	return fnosconfig.LoadConfig()
 }
 
-// Mount 在已启动的 FileCodeBox Hertz server 上挂载飞牛适配路由组。
+// Mount 在已启动的 PigeonBox Hertz server 上挂载飞牛适配路由组。
 //
 // 设计要点:
-//   - 不修改 FileCodeBox 原有路由,飞牛能力以独立路由组 /api/fnos/* 注入。
+//   - 不修改 PigeonBox 原有路由,飞牛能力以独立路由组 /api/fnos/* 注入。
 //   - 凭证缺失(降级模式)时,/api/fnos/* 统一返回 503,提示"未配置飞牛凭证",
 //     其余 API 正常工作。
 //   - 凭证就绪时,各能力模块各自注册子路由。

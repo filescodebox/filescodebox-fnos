@@ -15,9 +15,9 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/cloudwego/hertz/pkg/route"
 
-	"github.com/filescodebox/core/pkg/logger"
+	"github.com/pigeonbox/core/pkg/logger"
 
-	"github.com/filescodebox/fnos/adapter/internal/fnosconfig"
+	"github.com/pigeonbox/fnos/adapter/internal/fnosconfig"
 )
 
 // Mount 在飞牛路由组上挂载 SSO 子路由。

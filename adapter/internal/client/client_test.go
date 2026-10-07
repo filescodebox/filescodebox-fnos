@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/filescodebox/fnos/adapter/internal/fnosconfig"
+	"github.com/pigeonbox/fnos/adapter/internal/fnosconfig"
 )
 
 // 降级模式下不应创建 client(New 返回 nil)。
