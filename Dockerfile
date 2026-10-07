@@ -1,10 +1,10 @@
-# FilesCodeBox 飞牛(fnOS)应用镜像
+# PigeonBox 飞牛(fnOS)应用镜像
 #
-# 单容器单进程:fnos-adapter 二进制以库调用方式拉起 FilesCodeBox 全部业务,
+# 单容器单进程:fnos-adapter 二进制以库调用方式拉起 PigeonBox 全部业务,
 # 并挂载飞牛 Open API 适配层(SSO/共享目录/通知/内网穿透),同端口服务内嵌前端。
 #
 # 构建上下文为本仓库即可(core/contracts 经 go.mod 正式版本从 module proxy 拉取;
-# 前端产物自 filescodebox/frontend 现场构建,架构无关,只在构建机原生平台跑一次)。
+# 前端产物自 pigeonbox/frontend 现场构建,架构无关,只在构建机原生平台跑一次)。
 #   cd fnos && docker build -t fnos:latest .
 # GOPROXY 可用 --build-arg GOPROXY=... 覆盖(默认国内加速;海外 CI 传空走默认)。
 
@@ -20,13 +20,13 @@ ENV NPM_CONFIG_REGISTRY=${NPM_REGISTRY}
 
 RUN apk add --no-cache git \
     && git clone -q --depth 1 -b "${FRONTEND_REF}" \
-       https://github.com/filescodebox/frontend.git /src
+       https://github.com/pigeonbox/frontend.git /src
 
 WORKDIR /src
 RUN npm ci --no-audit --no-fund \
     && npx vite build --outDir /frontend-dist --emptyOutDir
 
-# ========== Stage 2: 构建 fnos-adapter(含 FilesCodeBox 库) ==========
+# ========== Stage 2: 构建 fnos-adapter(含 PigeonBox 库) ==========
 FROM golang:1.26-alpine AS builder
 
 ARG GOPROXY=https://goproxy.cn,direct
@@ -52,9 +52,9 @@ ARG BUILD_TIME=unknown
 # 编译(静态链接 musl;CGO 仅预留,当前为纯 Go sqlite 驱动)
 RUN CGO_ENABLED=1 go build \
     -ldflags="-w -s \
-    -X 'github.com/filescodebox/kit/version.Version=${VERSION}' \
-    -X 'github.com/filescodebox/kit/version.BuildCommit=${COMMIT}' \
-    -X 'github.com/filescodebox/kit/version.BuildTime=${BUILD_TIME}'" \
+    -X 'github.com/pigeonbox/kit/version.Version=${VERSION}' \
+    -X 'github.com/pigeonbox/kit/version.BuildCommit=${COMMIT}' \
+    -X 'github.com/pigeonbox/kit/version.BuildTime=${BUILD_TIME}'" \
     -o /out/fnos-adapter ./cmd/fnos-adapter
 
 # ========== Stage 3: 运行时镜像 ==========

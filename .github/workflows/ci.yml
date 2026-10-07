@@ -42,7 +42,7 @@ jobs:
         run: cd fnos && ../fnpack build
       - uses: actions/upload-artifact@v4
         with:
-          name: filescodebox-fpk
-          path: fnos/filescodebox.fpk
+          name: pigeonbox-fpk
+          path: fnos/pigeonbox.fpk
           retention-days: 14
           if-no-files-found: error

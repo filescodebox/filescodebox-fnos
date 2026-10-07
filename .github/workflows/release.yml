@@ -1,12 +1,12 @@
 name: Release
 # 打 v* tag → 三路发布:
-#   1. release: 多架构镜像推 ghcr.io/filescodebox/fnos
+#   1. release: 多架构镜像推 ghcr.io/pigeonbox/fnos
 #   2. fpk + attach-fpk: fnpack 打应用包,挂本仓 Release(GITHUB_TOKEN 同仓写即可)
-#   3. attach-to-hub: 回挂 fpk 到生态主仓 filescodebox/filescodebox 的 Release(tag fnos-v*,
+#   3. attach-to-hub: 回挂 fpk 到生态主仓 pigeonbox/pigeonbox 的 Release(tag fnos-v*,
 #      与 desktop 回挂 desktop-v* 同模式——所有二进制产物统一在主仓 Releases 可下载;
 #      跨仓写用 FNOS_PAT,secret 未配置时本 job 失败放行(continue-on-error),本地 gh release upload 兜底)
 # workflow_dispatch: 传 version(现有 tag 名,如 v0.3.0)对该版本手动重跑 fpk 打包+双挂(不发镜像),用于验证/补救
-# (2026-10-04 随仓改名 filescodebox-fnos → fnos 对齐;旧镜像 filescodebox-fnos 冻结在 v0.2.6,更早 filecodebox-fnos 冻结在 v0.2.1)
+# (2026-10-04 随仓改名 pigeonbox-fnos → fnos 对齐;旧镜像 pigeonbox-fnos 冻结在 v0.2.6,更早 pigeonbox-fnos 冻结在 v0.2.1)
 on:
   push:
     tags: ["v*"]
@@ -19,7 +19,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE: ghcr.io/filescodebox/fnos
+  IMAGE: ghcr.io/pigeonbox/fnos
 
 jobs:
   release:
@@ -89,8 +89,8 @@ jobs:
         run: cd fnos && ../fnpack build
       - uses: actions/upload-artifact@v4
         with:
-          name: filescodebox-fpk
-          path: fnos/filescodebox.fpk
+          name: pigeonbox-fpk
+          path: fnos/pigeonbox.fpk
           retention-days: 14
           if-no-files-found: error
 
@@ -102,7 +102,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: filescodebox-fpk
+          name: pigeonbox-fpk
           path: fpk
       - name: 挂本仓 Release
         env:
@@ -111,9 +111,9 @@ jobs:
         run: |
           gh release view "${VER}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1 || \
             gh release create "${VER}" --repo "${GITHUB_REPOSITORY}" \
-              --title "FilesCodeBox fnOS ${VER}" \
-              --notes "飞牛 fnOS 原生应用包(见 Assets filescodebox.fpk,内含双架构二进制+前端,安装/运行免 Docker 免镜像拉取)。Docker 部署走 ghcr.io/filescodebox/fnos(tag 跟随本 Release)。"
-          gh release upload "${VER}" fpk/filescodebox.fpk --repo "${GITHUB_REPOSITORY}" --clobber
+              --title "PigeonBox fnOS ${VER}" \
+              --notes "飞牛 fnOS 原生应用包(见 Assets pigeonbox.fpk,内含双架构二进制+前端,安装/运行免 Docker 免镜像拉取)。Docker 部署走 ghcr.io/pigeonbox/fnos(tag 跟随本 Release)。"
+          gh release upload "${VER}" fpk/pigeonbox.fpk --repo "${GITHUB_REPOSITORY}" --clobber
 
   attach-to-hub:
     needs: fpk
@@ -122,7 +122,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: filescodebox-fpk
+          name: pigeonbox-fpk
           path: fpk
       - name: 回挂 fpk 到生态主仓
         env:
@@ -130,14 +130,14 @@ jobs:
           TAG: fnos-${{ inputs.version || github.ref_name }}
           VER: ${{ inputs.version || github.ref_name }}
         run: |
-          NOTES=$(printf '%s\n\n---\n🗂 **组件仓库**: [filescodebox/fnos](https://github.com/filescodebox/fnos) · **完整变更日志**: [%s](https://github.com/filescodebox/fnos/releases/tag/%s)\n🌐 **生态总览 / Latest**: [filescodebox/filescodebox](https://github.com/filescodebox/filescodebox/releases/latest)\n' \
-            "飞牛 fnOS 原生应用包(见 Assets,免 Docker 免镜像拉取)。Docker 部署: ghcr.io/filescodebox/fnos。" "${VER}" "${VER}")
-          gh release view "${TAG}" --repo filescodebox/filescodebox >/dev/null 2>&1 || \
-            gh release create "${TAG}" --repo filescodebox/filescodebox \
-              --title "FilesCodeBox fnOS ${VER}" \
+          NOTES=$(printf '%s\n\n---\n🗂 **组件仓库**: [pigeonbox/fnos](https://github.com/pigeonbox/fnos) · **完整变更日志**: [%s](https://github.com/pigeonbox/fnos/releases/tag/%s)\n🌐 **生态总览 / Latest**: [pigeonbox/pigeonbox](https://github.com/pigeonbox/pigeonbox/releases/latest)\n' \
+            "飞牛 fnOS 原生应用包(见 Assets,免 Docker 免镜像拉取)。Docker 部署: ghcr.io/pigeonbox/fnos。" "${VER}" "${VER}")
+          gh release view "${TAG}" --repo pigeonbox/pigeonbox >/dev/null 2>&1 || \
+            gh release create "${TAG}" --repo pigeonbox/pigeonbox \
+              --title "PigeonBox fnOS ${VER}" \
               --latest=false \
               --notes "${NOTES}"
-          gh release upload "${TAG}" fpk/filescodebox.fpk --repo filescodebox/filescodebox --clobber
+          gh release upload "${TAG}" fpk/pigeonbox.fpk --repo pigeonbox/pigeonbox --clobber
           # 组件回挂恒不为 Latest(Latest 属于 hub 生态快照 v*);release 已存在时也兜底纠偏
-          gh release edit "${TAG}" --repo filescodebox/filescodebox --latest=false || true
-          echo "已回挂到 filescodebox/filescodebox Releases"
+          gh release edit "${TAG}" --repo pigeonbox/pigeonbox --latest=false || true
+          echo "已回挂到 pigeonbox/pigeonbox Releases"

@@ -1,19 +1,19 @@
 # fnos
 
-[![CI](https://github.com/filescodebox/fnos/actions/workflows/ci.yml/badge.svg)](https://github.com/filescodebox/fnos/actions/workflows/ci.yml)
-[![Tag](https://img.shields.io/github/v/tag/filescodebox/fnos)](https://github.com/filescodebox/fnos/tags)
-[![License](https://img.shields.io/github/license/filescodebox/fnos)](LICENSE)
+[![CI](https://github.com/pigeonbox/fnos/actions/workflows/ci.yml/badge.svg)](https://github.com/pigeonbox/fnos/actions/workflows/ci.yml)
+[![Tag](https://img.shields.io/github/v/tag/pigeonbox/fnos)](https://github.com/pigeonbox/fnos/tags)
+[![License](https://img.shields.io/github/license/pigeonbox/fnos)](LICENSE)
 
-> [FilesCodeBox](https://github.com/filescodebox/filescodebox)（文件快递柜）的飞牛 fnOS 应用适配层——单容器库式集成 FilesCodeBox 全部业务，包装为可在飞牛 NAS 应用中心安装的第三方应用，并接入飞牛 Open API。
+> [PigeonBox](https://github.com/pigeonbox/pigeonbox)（文件快递柜）的飞牛 fnOS 应用适配层——单容器库式集成 PigeonBox 全部业务，包装为可在飞牛 NAS 应用中心安装的第三方应用，并接入飞牛 Open API。
 
-> 🗂️ [FilesCodeBox 生态](https://github.com/orgs/filescodebox)成员仓 · 应用包统一发布在 [hub 仓 Releases](https://github.com/filescodebox/filescodebox/releases)（`fnos-v*` 资产）
+> 🗂️ [PigeonBox 生态](https://github.com/orgs/pigeonbox)成员仓 · 应用包统一发布在 [hub 仓 Releases](https://github.com/pigeonbox/pigeonbox/releases)（`fnos-v*` 资产）
 
 ## 特性
 
 | 能力 | 说明 | 状态 |
 |------|------|------|
 | **一键安装** | `fnpack` 标准应用包，应用中心托管启停/升级 | ✅ fnpack 1.2.3 打包通过 |
-| **业务全功能** | 单进程库式调用 [core](https://github.com/filescodebox/core) `bootstrap.Bootstrap()`，文本/文件分享、取件码、多云存储全部可用 | ✅ |
+| **业务全功能** | 单进程库式调用 [core](https://github.com/pigeonbox/core) `bootstrap.Bootstrap()`，文本/文件分享、取件码、多云存储全部可用 | ✅ |
 | **数据落 NAS** | 上传文件 + SQLite 全部落在用户可见的共享目录，文件管理器可直接查看/备份 | ✅ |
 | **开箱即用** | JWT 密钥自动生成并持久化；默认免 Redis（core v0.14.0 单机内存模式，取件码映射存进程内、重启/升级失效）；安装向导收集可选凭证 | ✅ |
 | **降级模式** | 未配置飞牛凭证时，飞牛集成关闭、业务完整运行 | ✅ |
@@ -26,7 +26,7 @@
 ```
                 ┌──────────────── fnos-adapter 二进制(容器入口)────────────────┐
                 │                                                              │
-  HTTP 12345 ──►│  bootstrap.Bootstrap() ──► *server.Hertz (FilesCodeBox 全业务)│
+  HTTP 12345 ──►│  bootstrap.Bootstrap() ──► *server.Hertz (PigeonBox 全业务)│
                 │         │                              ▲                      │
                 │         └── adapter.Mount(h, cfg) ─────┘ 挂载 /api/fnos/*     │
                 │                          (SSO/目录/通知/穿透)                 │
@@ -41,19 +41,19 @@
 
 ## 安装（飞牛 fnOS）
 
-1. 从 hub 仓 [Releases](https://github.com/filescodebox/filescodebox/releases) 下载 `fnos-v*` 资产中的 `filescodebox.fpk`（或自行 [打包](#打包fpk)）
+1. 从 hub 仓 [Releases](https://github.com/pigeonbox/pigeonbox/releases) 下载 `fnos-v*` 资产中的 `pigeonbox.fpk`（或自行 [打包](#打包fpk)）
 2. 飞牛应用中心 → 手动安装 → 上传 fpk，按向导完成安装（飞牛凭证可留空，随时在应用设置补填）
 3. 桌面入口打开即用；数据在应用数据目录（NAS 共享路径）下的 `data/`（上传文件/SQLite/JWT 密钥；取件码映射存进程内存，无独立文件）
 
-> 要求：fnOS 设备可拉取 `ghcr.io/filescodebox/fnos`（x86/ARM 均可，镜像多架构）。
+> 要求：fnOS 设备可拉取 `ghcr.io/pigeonbox/fnos`（x86/ARM 均可，镜像多架构）。
 
 ## Docker 直接部署（不经飞牛应用中心）
 
 ```bash
-docker run -d --name filescodebox -p 12345:12345 \
+docker run -d --name pigeonbox -p 12345:12345 \
   -v ./data:/app/data \
   -e FCB_SERVER_HOST=0.0.0.0 -e FCB_PRODUCTION=1 \
-  ghcr.io/filescodebox/fnos:1.2
+  ghcr.io/pigeonbox/fnos:1.2
 ```
 
 完整编排（健康检查、密钥引导）见 [`fnos/app/docker/docker-compose.yaml`](fnos/app/docker/docker-compose.yaml)。
@@ -62,7 +62,7 @@ docker run -d --name filescodebox -p 12345:12345 \
 
 ```bash
 # 安装 fnpack: https://developer.fnnas.com/docs/cli/fnpack/
-cd fnos && fnpack build     # 产物 filescodebox.fpk
+cd fnos && fnpack build     # 产物 pigeonbox.fpk
 ```
 
 `fnos/` 目录即应用包定义，**已对齐飞牛官方规范**（manifest / app/docker / app/ui 入口+图标 / cmd 生命周期脚本 / wizard 向导 / config 资源与权限）。CI 每次推送都会跑 `fnpack build` 校验并产出 fpk 构件。
@@ -71,7 +71,7 @@ cd fnos && fnpack build     # 产物 filescodebox.fpk
 
 ## 本地开发
 
-本仓已纳入 [filescodebox](https://github.com/filescodebox/filescodebox) 装配仓的 `go.work`：
+本仓已纳入 [pigeonbox](https://github.com/pigeonbox/pigeonbox) 装配仓的 `go.work`：
 
 ```bash
 # 工作区内(hub 根 make setup 拉齐全部模块仓后):联编本地 core main
@@ -108,7 +108,7 @@ fnos/
 └─ Dockerfile                   多架构镜像构建(amd64/arm64;内嵌前端+entrypoint 降权)
 ```
 
-> 前端内嵌（v1.2.7 起）：Dockerfile 现场构建 `filescodebox/frontend` 产物入镜像
+> 前端内嵌（v1.2.7 起）：Dockerfile 现场构建 `pigeonbox/frontend` 产物入镜像
 > `www/`，adapter 经 `bootstrap.WithStaticDir` 同端口服务 SPA——桌面图标打开即用。
 > `FRONTEND_REF` 构建参数可钉前端分支/tag（默认 main）。
 
@@ -122,10 +122,10 @@ fnos/
 | v1.2.2 | v0.10.0 | 跟随 core v0.10.0 安全审计加固；测试 -race 门禁；版本注入上收 kit/version |
 | v1.2.1 | v0.8.0 | core 对齐（P2P 联邦接入；fnos 依赖面仅 bootstrap+logger，行为无变化） |
 | v1.2.0 | v0.7.6 | 版本号与 desktop/charts 统一起始版；compose 镜像 tag 对齐 major.minor `:1.2` |
-| v0.3.x | v0.7.6 | 仓改名 fnos——镜像路径切换 `ghcr.io/filescodebox/fnos`，go module path 同步 |
+| v0.3.x | v0.7.6 | 仓改名 fnos——镜像路径切换 `ghcr.io/pigeonbox/fnos`，go module path 同步 |
 | v0.2.x | v0.5.0 → v0.7.6 | 上传治理/多云存储/P0 修复；fnpack 规范化 + 内置 Redis + 向导；0.2.6 升 core v0.7.6 |
 
-镜像：`ghcr.io/filescodebox/fnos`（tag 跟随 Release；`0.2.x` 及更早镜像名为 `filescodebox-fnos`、`0.1.x` 为 `filecodebox-fnos`，均已冻结）。
+镜像：`ghcr.io/pigeonbox/fnos`（tag 跟随 Release；`0.2.x` 及更早镜像名为 `pigeonbox-fnos`、`0.1.x` 为 `pigeonbox-fnos`，均已冻结）。
 
 ## 路线图
 
@@ -136,7 +136,7 @@ fnos/
 
 ## 相关仓库
 
-[filescodebox](https://github.com/filescodebox/filescodebox)（装配仓）· [core](https://github.com/filescodebox/core)（业务核心）· [server](https://github.com/filescodebox/server)（独立部署壳）· [frontend](https://github.com/filescodebox/frontend) · [charts](https://github.com/filescodebox/charts)（Helm）
+[pigeonbox](https://github.com/pigeonbox/pigeonbox)（装配仓）· [core](https://github.com/pigeonbox/core)（业务核心）· [server](https://github.com/pigeonbox/server)（独立部署壳）· [frontend](https://github.com/pigeonbox/frontend) · [charts](https://github.com/pigeonbox/charts)（Helm）
 
 ## License
 

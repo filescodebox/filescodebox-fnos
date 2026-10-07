@@ -1,8 +1,8 @@
 {
     "data-share": {
         "shares": [
-            { "name": "filescodebox" },
-            { "name": "filescodebox/data" }
+            { "name": "pigeonbox" },
+            { "name": "pigeonbox/data" }
         ]
     }
 }

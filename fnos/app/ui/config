@@ -1,7 +1,7 @@
 {
   ".url": {
-    "filescodebox.main": {
-      "title": "FilesCodeBox",
+    "pigeonbox.main": {
+      "title": "PigeonBox",
       "icon": "images/icon_{0}.png",
       "type": "url",
       "protocol": "http",
