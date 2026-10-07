@@ -1,17 +1,24 @@
 #!/bin/bash
-# 安装后置:把向导收集的凭证写入 compose 同目录 .env
+# 安装后置:把向导收集的凭证写入数据目录 .env,cmd/main 启动时 source。
 #
-# 官方未文档化"向导变量是否参与 compose ${} 插值",此处用标准机制桥接:
-# docker compose 会自动加载项目目录(即本文件所在 app/docker/)下的 .env
-# 完成 ${FNOS_*:-}/${FCB_JWT_SECRET:-} 插值。留空值写空串,compose 走 :- 默认。
+# 优先 ${TRIM_PKGVAR}/.env(数据卷,升级保留);目录不可写时回退包根
+# ${TRIM_APPDEST}/.env(cmd/main 两处都找)。写失败不阻断安装——凭证
+# 可随时在应用设置(配置向导)补填,留空=降级模式+JWT 自动生成。
 # FNOS_ENABLED 由凭证是否齐全推导,不单独向用户收集。
-set -e
 
-ENV_FILE="${TRIM_APPDEST}/docker/.env"
-
-# dotenv 值统一双引号包裹;转义值内的反斜杠/双引号/$,防注入与插值意外
 quote() {
   printf '"%s"' "$(printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/\$/\\$/g')"
+}
+
+write_env() {
+  umask 077
+  cat > "$1" <<EOF
+# 由飞牛向导生成(cmd/install_callback 或 config_callback),手工修改后需在应用设置重新提交或重启应用
+FNOS_ENABLED=$(quote "$ENABLED")
+FNOS_APPID=$(quote "$FNOS_APPID")
+FNOS_APPSECRET=$(quote "$FNOS_APPSECRET")
+FCB_JWT_SECRET=$(quote "$FCB_JWT_SECRET")
+EOF
 }
 
 ENABLED="false"
@@ -19,13 +26,15 @@ if [ -n "$FNOS_APPID" ] && [ -n "$FNOS_APPSECRET" ]; then
   ENABLED="true"
 fi
 
-umask 077
-cat > "$ENV_FILE" <<EOF
-# 由飞牛向导生成(cmd/install_callback 或 config_callback),手工修改后需在应用设置重新提交或重启应用
-FNOS_ENABLED=$(quote "$ENABLED")
-FNOS_APPID=$(quote "$FNOS_APPID")
-FNOS_APPSECRET=$(quote "$FNOS_APPSECRET")
-FCB_JWT_SECRET=$(quote "$FCB_JWT_SECRET")
-EOF
+if mkdir -p "${TRIM_PKGVAR}" 2>/dev/null && write_env "${TRIM_PKGVAR}/.env" 2>/dev/null; then
+  echo "wizard env written: ${TRIM_PKGVAR}/.env (FNOS_ENABLED=$ENABLED)"
+  exit 0
+fi
 
-echo "wizard env written: $ENV_FILE (FNOS_ENABLED=$ENABLED)"
+if write_env "${TRIM_APPDEST}/.env" 2>/dev/null; then
+  echo "wizard env written (fallback): ${TRIM_APPDEST}/.env (FNOS_ENABLED=$ENABLED)"
+  exit 0
+fi
+
+echo "warn: could not write wizard env (both paths failed); fill via app settings later"
+exit 0

@@ -16,3 +16,8 @@ vendor/
 
 # 飞牛打包产物
 fnos/*.fpk
+
+# 原生 fpk 构建产物(build-native.sh 产出,fnpack build 前置)
+fnos/app/bin/
+fnos/app/www/
+fnos/app/configs/

@@ -1,7 +1,8 @@
 {
-    "docker-project": {
-        "projects": [
-            { "name": "filescodebox", "path": "docker" }
+    "data-share": {
+        "shares": [
+            { "name": "filescodebox" },
+            { "name": "filescodebox/data" }
         ]
     }
 }

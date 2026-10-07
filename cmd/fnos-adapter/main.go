@@ -66,6 +66,9 @@ func ensureJWTSecret() {
 func main() {
 	// --config 指定 FileCodeBox 配置文件路径(透传给 bootstrap)。
 	configPath := flag.String("config", "", "FileCodeBox 配置文件路径(默认 configs/config.yaml)")
+	// --static 前端静态资源目录:存在则以 WithStaticDir 注入 core(同端口服务
+	// 内嵌前端 SPA);不存在保持 core 默认(./static,缺目录时优雅降级为纯 API)。
+	staticDir := flag.String("static", "/app/www", "前端静态资源目录(不存在时回退 core 默认)")
 	flag.Parse()
 
 	// 注意:logger 必须先经 bootstrap.Init() 初始化后才能使用(logger 全局变量初始为 nil)。
@@ -76,7 +79,11 @@ func main() {
 
 	// 1. 以库调用方式拉起 FileCodeBox 全部业务。
 	//    返回的 *server.Hertz 已完成:读配置→初始化logger→建DB→建storage→装路由→装中间件。
-	h, err := bootstrap.Bootstrap(*configPath)
+	bootOpts := make([]bootstrap.Option, 0, 1)
+	if st, err := os.Stat(*staticDir); err == nil && st.IsDir() {
+		bootOpts = append(bootOpts, bootstrap.WithStaticDir(*staticDir))
+	}
+	h, err := bootstrap.BootstrapWithOptions(*configPath, bootOpts...)
 	if err != nil {
 		// 此时 logger 可能未初始化,fallback 到标准错误输出。
 		_, _ = os.Stderr.WriteString("FileCodeBox bootstrap 失败: " + err.Error() + "\n")

@@ -1,8 +1,10 @@
 #!/bin/bash
-# 升级前置:复确认数据目录归属
-# - data/ 归容器内应用进程(固定 uid 1000,数据卷跨版本沿用)
-# - 1.2.4 及以前内置的 redis/ 目录不再使用,保留在盘上无害,用户可自行清理
-set -e
-mkdir -p "${TRIM_PKGVAR}/data"
-chown -R 1000:1000 "${TRIM_PKGVAR}/data"
+# 升级前置(尽力而为):预建数据目录。
+#
+# 2026-10-07 真机回归教训:本脚本以包用户(run-as: package)运行,无 root 权限,
+# 且 fnOS 框架在此阶段尚未预建 ${TRIM_PKGVAR}——任何 mkdir/chown 失败都会
+# 以 10237 回滚整次升级。v1.2.7 起原生模式不再依赖目录预建(cmd/main 启动
+# 时自行 mkdir),此处仅尽力而为,任何失败都不阻断升级。
+mkdir -p "${TRIM_PKGVAR}/data" 2>/dev/null || true
+echo "data dir best-effort ready under ${TRIM_PKGVAR}"
 exit 0

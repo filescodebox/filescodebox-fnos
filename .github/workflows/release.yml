@@ -69,6 +69,18 @@ jobs:
         with:
           # 手动 dispatch 时按输入版本检出对应 tag,fpk 与 tag 构建严格一致
           ref: ${{ inputs.version || github.ref_name }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache-dependency-path: go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 原生产物构建(双架构二进制+前端,版本注入与镜像同源)
+        env:
+          VERSION: ${{ inputs.version || github.ref_name }}
+          COMMIT: ${{ github.sha }}
+        run: ./scripts/build-native.sh
       - name: 下载 fnpack(官方 CLI,与 ci.yml package job 同源)
         run: |
           curl -fsSL --retry 3 -o fnpack https://static2.fnnas.com/fnpack/fnpack-1.2.3-linux-amd64
@@ -100,7 +112,7 @@ jobs:
           gh release view "${VER}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1 || \
             gh release create "${VER}" --repo "${GITHUB_REPOSITORY}" \
               --title "FilesCodeBox fnOS ${VER}" \
-              --notes "飞牛 fnOS 应用包(见 Assets filescodebox.fpk)。镜像: ghcr.io/filescodebox/fnos(tag 跟随本 Release)。"
+              --notes "飞牛 fnOS 原生应用包(见 Assets filescodebox.fpk,内含双架构二进制+前端,安装/运行免 Docker 免镜像拉取)。Docker 部署走 ghcr.io/filescodebox/fnos(tag 跟随本 Release)。"
           gh release upload "${VER}" fpk/filescodebox.fpk --repo "${GITHUB_REPOSITORY}" --clobber
 
   attach-to-hub:
@@ -119,7 +131,7 @@ jobs:
           VER: ${{ inputs.version || github.ref_name }}
         run: |
           NOTES=$(printf '%s\n\n---\n🗂 **组件仓库**: [filescodebox/fnos](https://github.com/filescodebox/fnos) · **完整变更日志**: [%s](https://github.com/filescodebox/fnos/releases/tag/%s)\n🌐 **生态总览 / Latest**: [filescodebox/filescodebox](https://github.com/filescodebox/filescodebox/releases/latest)\n' \
-            "飞牛 fnOS 应用包(见 Assets)。镜像: ghcr.io/filescodebox/fnos。" "${VER}" "${VER}")
+            "飞牛 fnOS 原生应用包(见 Assets,免 Docker 免镜像拉取)。Docker 部署: ghcr.io/filescodebox/fnos。" "${VER}" "${VER}")
           gh release view "${TAG}" --repo filescodebox/filescodebox >/dev/null 2>&1 || \
             gh release create "${TAG}" --repo filescodebox/filescodebox \
               --title "FilesCodeBox fnOS ${VER}" \

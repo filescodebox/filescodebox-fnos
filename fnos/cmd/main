@@ -1,31 +1,142 @@
 #!/bin/bash
-# FilesCodeBox 飞牛(fnOS)应用生命周期脚本(Docker 项目模式)
+# FilesCodeBox 飞牛(fnOS)应用生命周期脚本(原生进程模式,v1.2.7 起)
 #
-# start/stop 由 fnOS 依据 config/resource 的 docker-project 声明接管,直接退出即可;
-# status 需自行检测容器运行态(与应用中心"运行中"状态展示相关),
-# 官方约定: exit 0 = 运行中,其他 = 未运行。
-# CONTAINER_NAME 必须与 app/docker/docker-compose.yaml 的 container_name 一致。
+# v1.2.6 及以前为 Docker 项目模式(resource: docker-project + ghcr 镜像),
+# 真机回归暴露两类硬伤:fpk 安装脚本以包用户运行无 root 权限(10237 回滚)、
+# ghcr 拉镜像依赖外网。原生模式彻底去 Docker:包内自带双架构静态二进制
+# (app/bin/)与前端产物(app/www/),进程以包用户直接运行。
+#
+# 脚本由 fnOS 框架以包用户调用,TRIM_* 环境变量由框架注入
+# (TRIM_PKGVAR=应用数据目录)。生命周期约定:
+#   start  exit 0=成功 / 1=失败
+#   stop   exit 0=成功 / 1=失败
+#   status exit 0=运行中 / 3=未运行
+# (结构对齐 fnpack create 官方原生模板)
 
-CONTAINER_NAME="filescodebox"
+APP_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LOG_FILE="${TRIM_PKGVAR}/app.log"
+PID_FILE="${TRIM_PKGVAR}/app.pid"
 
-is_running() {
-  docker inspect "$CONTAINER_NAME" 2>/dev/null | grep -q '"Status": "running"'
+# 按架构选二进制(build-native.sh 产出的静态链接文件)
+ARCH="$(uname -m)"
+case "$ARCH" in
+  x86_64)          BIN="$APP_ROOT/target/bin/filescodebox-linux-amd64" ;;
+  aarch64|arm64)   BIN="$APP_ROOT/target/bin/filescodebox-linux-arm64" ;;
+  *)
+    echo "unsupported arch: $ARCH" >> "${LOG_FILE}" 2>/dev/null || true
+    exit 1
+    ;;
+esac
+
+log_msg() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "${LOG_FILE}" 2>/dev/null || true
+}
+
+# 运行环境准备:在当前 shell 内导出(勿经命令替换子壳——export 传不出子壳)。
+# 三个路径 env 全部落 TRIM_PKGVAR:包内 config.yaml 是 Docker 路径(/app/data,
+# 与 ghcr 镜像共用单源),env 优先级高于 yaml。
+prepare_env() {
+    export FCB_DATA_PATH="${TRIM_PKGVAR}/data"
+    export FCB_DATABASE_DB_NAME="${TRIM_PKGVAR}/data/fileCodeBox.db"
+    export FCB_STORAGE_PATH="${TRIM_PKGVAR}/data/uploads"
+    export FCB_SERVER_HOST=0.0.0.0
+    export FCB_SERVER_PORT=12345
+    # 向导凭证(install/config_callback 写入,优先数据卷、回退包根);
+    # 缺省时 adapter 降级模式+JWT 自动生成
+    local env_file=""
+    if [ -r "${TRIM_PKGVAR}/.env" ]; then
+        env_file="${TRIM_PKGVAR}/.env"
+    elif [ -r "${APP_ROOT}/.env" ]; then
+        env_file="${APP_ROOT}/.env"
+    fi
+    if [ -n "$env_file" ]; then
+        set -a
+        # shellcheck disable=SC1090
+        . "$env_file"
+        set +a
+    fi
+    mkdir -p "${FCB_DATA_PATH}"
+}
+
+start_process() {
+    if status; then
+        return 0
+    fi
+    # fnpack 打包不保证保留执行位,启动前兜底(文件属包用户,chmod 可行)
+    chmod +x "$BIN" 2>/dev/null || true
+    if [ ! -x "$BIN" ]; then
+        log_msg "binary not executable: $BIN"
+        return 1
+    fi
+    prepare_env
+    log_msg "Starting process (${ARCH}) ..."
+    "$BIN" --config "$APP_ROOT/target/configs/config.yaml" \
+        --static "$APP_ROOT/target/www" >> "${LOG_FILE}" 2>&1 &
+    printf "%s" "$!" > "${PID_FILE}"
+    return 0
+}
+
+stop_process() {
+    log_msg "Stopping process ..."
+    if [ -r "${PID_FILE}" ]; then
+        pid=$(head -n 1 "${PID_FILE}" | tr -d '[:space:]')
+        if ! check_process "${pid}"; then
+            rm -f "${PID_FILE}"
+            log_msg "remove pid file (process gone)"
+            return 0
+        fi
+        log_msg "send TERM signal to PID:${pid}..."
+        kill -TERM "${pid}" >> "${LOG_FILE}" 2>&1 || true
+        local count=0
+        while check_process "${pid}" && [ $count -lt 10 ]; do
+            sleep 1
+            count=$((count + 1))
+            log_msg "waiting process terminal... (${count}s/10s)"
+        done
+        if check_process "${pid}"; then
+            log_msg "send KILL signal to PID:${pid}..."
+            kill -KILL "${pid}" >> "${LOG_FILE}" 2>&1 || true
+            sleep 1
+        fi
+        rm -f "${PID_FILE}"
+    fi
+    return 0
+}
+
+check_process() {
+    local pid=$1
+    if kill -0 "${pid}" 2>/dev/null; then
+        return 0
+    fi
+    return 1
+}
+
+status() {
+    if [ -f "${PID_FILE}" ]; then
+        pid=$(head -n 1 "${PID_FILE}" | tr -d '[:space:]')
+        if check_process "${pid}"; then
+            return 0
+        fi
+        rm -f "${PID_FILE}"
+    fi
+    return 1
 }
 
 case "$1" in
-  start)
-    exit 0
+start)
+    start_process
     ;;
-  stop)
-    exit 0
+stop)
+    stop_process
     ;;
-  status)
-    if is_running; then
-      exit 0
+status)
+    if status; then
+        exit 0
+    else
+        exit 3
     fi
-    exit 3
     ;;
-  *)
+*)
     echo "Unknown command: $1" > "$TRIM_TEMP_LOGFILE"
     exit 1
     ;;

@@ -1,13 +1,32 @@
 # FilesCodeBox 飞牛(fnOS)应用镜像
 #
 # 单容器单进程:fnos-adapter 二进制以库调用方式拉起 FilesCodeBox 全部业务,
-# 并挂载飞牛 Open API 适配层(SSO/共享目录/通知/内网穿透)。
+# 并挂载飞牛 Open API 适配层(SSO/共享目录/通知/内网穿透),同端口服务内嵌前端。
 #
-# 构建上下文为本仓库即可(core/contracts 经 go.mod 正式版本从 module proxy 拉取)。
+# 构建上下文为本仓库即可(core/contracts 经 go.mod 正式版本从 module proxy 拉取;
+# 前端产物自 filescodebox/frontend 现场构建,架构无关,只在构建机原生平台跑一次)。
 #   cd fnos && docker build -t fnos:latest .
 # GOPROXY 可用 --build-arg GOPROXY=... 覆盖(默认国内加速;海外 CI 传空走默认)。
 
-# ========== Stage 1: 构建 fnos-adapter(含 FilesCodeBox 库) ==========
+# ========== Stage 1: 前端构建产物(架构无关,BUILDPLATFORM 原生跑一次) ==========
+# v1.2.7 起内嵌前端:fpk 桌面图标指向 http://<nas>:12345/,纯后端镜像只会给 404
+# (2026-10-07 真机事故)。只跑 vite build(类型检查由 frontend 仓 CI 独立把守,
+# 与 openwrt/scripts/build-frontend.sh 同策略)。
+FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
+
+ARG FRONTEND_REF=main
+ARG NPM_REGISTRY=https://registry.npmjs.org
+ENV NPM_CONFIG_REGISTRY=${NPM_REGISTRY}
+
+RUN apk add --no-cache git \
+    && git clone -q --depth 1 -b "${FRONTEND_REF}" \
+       https://github.com/filescodebox/frontend.git /src
+
+WORKDIR /src
+RUN npm ci --no-audit --no-fund \
+    && npx vite build --outDir /frontend-dist --emptyOutDir
+
+# ========== Stage 2: 构建 fnos-adapter(含 FilesCodeBox 库) ==========
 FROM golang:1.26-alpine AS builder
 
 ARG GOPROXY=https://goproxy.cn,direct
@@ -38,12 +57,13 @@ RUN CGO_ENABLED=1 go build \
     -X 'github.com/filescodebox/kit/version.BuildTime=${BUILD_TIME}'" \
     -o /out/fnos-adapter ./cmd/fnos-adapter
 
-# ========== Stage 2: 运行时镜像 ==========
+# ========== Stage 3: 运行时镜像 ==========
 FROM alpine:3.19
 
-RUN apk --no-cache add ca-certificates tzdata sqlite
+# su-exec:entrypoint 以 root 修正数据卷归属后降权 uid 1000(见 entrypoint.sh)
+RUN apk --no-cache add ca-certificates tzdata sqlite su-exec
 
-# 非 root 用户(与原项目对齐 uid 1000)
+# 应用用户(与原项目对齐 uid 1000);容器以 root 启动由 entrypoint 降权
 RUN addgroup -g 1000 app && \
     adduser -D -s /bin/sh -u 1000 -G app app
 
@@ -53,15 +73,15 @@ COPY --from=builder /out/fnos-adapter ./
 # 随镜像携带默认配置:裸 docker run 的开箱可用性(open_upload/存储路径
 # 在 core 无零值可用默认);fnOS 应用包模式由 compose env 覆盖同名项。
 COPY configs/config.yaml ./configs/config.yaml
+# 内嵌前端(WithStaticDir 指向此目录;目录缺失时 adapter 回退 core 默认并优雅降级)
+COPY --from=frontend /frontend-dist /app/www
+COPY entrypoint.sh /app/entrypoint.sh
 
-RUN mkdir -p data && chown -R app:app /app
-
-USER app
-
-EXPOSE 12345
+RUN chmod +x /app/entrypoint.sh && mkdir -p data www && chown -R app:app /app
 
 # wget --spider 发 HEAD,/health 未注册 HEAD 恒 404 → 健康检查永不通过,须显式 GET
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD wget -q -O /dev/null http://localhost:12345/health || exit 1
 
-CMD ["./fnos-adapter"]
+ENTRYPOINT ["/app/entrypoint.sh"]
+EXPOSE 12345

@@ -20,10 +20,20 @@ jobs:
 
   # 应用包打包校验:fnos/ 目录结构/manifest/生命周期脚本任何回退都会在此失败,
   # 并产出可安装的 .fpk 供手动装机验证。
+  # v1.2.7 起 fpk 为原生模式:打包前须产出双架构静态二进制+前端(app/bin|www)。
   package:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache-dependency-path: go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 原生产物构建(双架构二进制+前端)
+        run: ./scripts/build-native.sh
       - name: 下载 fnpack(官方 CLI)
         run: |
           curl -fsSL --retry 3 -o fnpack https://static2.fnnas.com/fnpack/fnpack-1.2.3-linux-amd64

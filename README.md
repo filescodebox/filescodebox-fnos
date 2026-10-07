@@ -105,13 +105,18 @@ fnos/
 │  ├─ cmd/                      生命周期脚本(install/upgrade/uninstall/config)
 │  ├─ wizard/                   安装/配置向导(飞牛凭证与 JWT 密钥)
 │  └─ config/                   权限(privilege)与资源(resource: docker-project)
-└─ Dockerfile                   多架构镜像构建(amd64/arm64)
+└─ Dockerfile                   多架构镜像构建(amd64/arm64;内嵌前端+entrypoint 降权)
 ```
+
+> 前端内嵌（v1.2.7 起）：Dockerfile 现场构建 `filescodebox/frontend` 产物入镜像
+> `www/`，adapter 经 `bootstrap.WithStaticDir` 同端口服务 SPA——桌面图标打开即用。
+> `FRONTEND_REF` 构建参数可钉前端分支/tag（默认 main）。
 
 ## 版本对应
 
 | 本仓 | core | 说明 |
 |------|------|------|
+| v1.2.7 | v0.14.2 | 修复 fpk 真机安装失败（目录准备改尽力而为 + entrypoint 兜底归属）；镜像内嵌前端（桌面图标打开即用）；core 补文件/分片上传分享链接 0.0.0.0 漏网路径 |
 | v1.2.6 | v0.14.1 | 跟随 core v0.14.1（env-only 缺 notifies 表修复；分享链接 0.0.0.0 修复） |
 | v1.2.3 | v0.11.0 | 跟随 core v0.11.0（Cookie 会话）；默认关闭开放注册（管理员建号） |
 | v1.2.2 | v0.10.0 | 跟随 core v0.10.0 安全审计加固；测试 -race 门禁；版本注入上收 kit/version |
