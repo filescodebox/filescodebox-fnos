@@ -53,10 +53,8 @@
 docker run -d --name pigeonbox -p 12345:12345 \
   -v ./data:/app/data \
   -e FCB_SERVER_HOST=0.0.0.0 -e FCB_PRODUCTION=1 \
-  ghcr.io/pigeonbox/fnos:1.2
+  ghcr.io/pigeonbox/fnos:1.14
 ```
-
-完整编排（健康检查、密钥引导）见 [`fnos/app/docker/docker-compose.yaml`](fnos/app/docker/docker-compose.yaml)。
 
 ## 打包 .fpk
 
@@ -67,7 +65,7 @@ cd fnos && fnpack build     # 产物 pigeonbox.fpk
 
 `fnos/` 目录即应用包定义，**已对齐飞牛官方规范**（manifest / app/docker / app/ui 入口+图标 / cmd 生命周期脚本 / wizard 向导 / config 资源与权限）。CI 每次推送都会跑 `fnpack build` 校验并产出 fpk 构件。
 
-注意：compose 内镜像 tag 写死 major.minor（如 `1.2`），发版时须与 `manifest` 的 `version` 同步更新。
+注意：发版版本真相源=仓根 `VERSION` 文件(由 hub 发布列车 `scripts/release-train.sh bump` 统一维护)，`fnos/manifest` 的 `version` 与之同步,勿单手改一处。
 
 ## 本地开发
 
