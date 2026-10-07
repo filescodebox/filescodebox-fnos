@@ -1,5 +1,5 @@
 #!/bin/sh
-# FilesCodeBox 飞牛应用镜像入口:数据目录归属兜底 + 降权运行。
+# PigeonBox 飞牛应用镜像入口:数据目录归属兜底 + 降权运行。
 #
 # 为什么需要(2026-10-07 fnOS 真机回归):Docker 绑定挂载的宿主目录不存在时由
 # 守护进程(root)代建,属主 root:root——容器内 uid 1000 无法写入(SQLite/JWT

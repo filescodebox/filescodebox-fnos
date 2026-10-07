@@ -1,4 +1,4 @@
-# FilesCodeBox 飞牛适配层默认配置——裸 `docker run` 场景的开箱默认。
+# PigeonBox 飞牛适配层默认配置——裸 `docker run` 场景的开箱默认。
 # fnOS 应用包模式(compose)经 FCB_* env 覆盖同名项，值与本文件保持一致；
 # core 对 open_upload/datapath/storage_path 无零值可用默认(缺失时上传被拒、
 # 存储路径为空)，故必须随镜像携带。改默认值时与 fnos/app/docker/docker-compose.yaml 同步。
@@ -12,7 +12,7 @@ database:
   driver: "sqlite"
   db_name: "/app/data/fileCodeBox.db"
 app:
-  name: "FilesCodeBox"
+  name: "PigeonBox"
   datapath: "/app/data"
 upload:
   # 匿名口令分享是产品核心能力,开箱即用(管理后台可关)
