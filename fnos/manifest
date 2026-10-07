@@ -1,5 +1,5 @@
 appname=pigeonbox
-version=1.2.8
+version=1.14.0
 display_name=PigeonBox
 platform=all
 maintainer=zhangyi
@@ -11,6 +11,7 @@ desktop_applaunchname=pigeonbox.main
 service_port=12345
 checkport=true
 desc=文件快递柜——匿名口令分享文本/文件,支持拖拽上传、多云存储后端;飞牛原生集成(数据落 NAS 共享目录/应用中心托管启停)。
+changelog=1.14.0: 版本策略与产品主版本同号(内容同 1.2.8:fpk 原生模式+core v0.14.4)。
 changelog=1.2.8: 底层 core v0.14.3 → v0.14.4 升钉(v0.14.3 tag 已废弃,修复源码重建悬空引用)。
 changelog=1.2.7: fpk 切原生进程模式——包内自带双架构静态二进制+前端,桌面图标打开即用,安装/运行全程免 Docker 免 ghcr 拉镜像;修复 fpk 真机安装必现失败(10237,脚本以包用户运行无 root 权限);底层 core v0.14.1 → v0.14.2(文件/分片上传的分享链接 0.0.0.0 漏网路径)。Docker 部署改走 ghcr.io/pigeonbox/fnos:1.2 镜像(内嵌前端+entrypoint 降权)。
 changelog=1.2.5: 默认关闭内置 Redis——取件码映射走 core v0.14.0 单机内存模式(免 Redis 全功能;重启/升级后未取件的取件码失效,8 位分享码不受影响)。
