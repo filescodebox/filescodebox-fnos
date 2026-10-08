@@ -4,7 +4,7 @@ go 1.26.5
 
 require (
 	github.com/cloudwego/hertz v0.9.6
-	github.com/pigeonbox/core v0.14.7
+	github.com/pigeonbox/core v0.14.8
 	github.com/pigeonbox/kit v0.3.1
 	github.com/stretchr/testify v1.12.1
 	go.uber.org/zap v1.27.0
