@@ -1,3 +1,19 @@
 #!/bin/bash
-# 升级后置回调:无额外动作。版本迁移由应用自身启动逻辑兼容(SQLite schema 自动迁移)。
+# 升级后置回调:升级前自动备份业务库(轮转保留最近 3 份)。
+#
+# 升级虽有 SQLite schema 自动迁移兼容,但为回滚/排查兜底,升级瞬间快照一份;
+# 由框架在 stop 之后、新版本就位之前调用(升级窗口内数据静止,快照一致)。
+set -u
+DATA_DIR="${TRIM_PKGVAR}/data"
+DB="${DATA_DIR}/fileCodeBox.db"
+[ -f "$DB" ] || exit 0
+
+STAMP=$(date +%Y%m%d-%H%M%S)
+cp "$DB" "${DB}.bak-${STAMP}" 2>/dev/null || exit 0
+
+# 轮转:仅保留最近 3 份备份
+ls -t "${DB}".bak-* 2>/dev/null | tail -n +4 | while read -r old; do
+  rm -f "$old"
+done
+echo "db backup saved: ${DB}.bak-${STAMP}"
 exit 0

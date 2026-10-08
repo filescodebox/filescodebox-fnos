@@ -31,7 +31,9 @@ echo "==> 构建原生二进制 (CGO_ENABLED=0 静态链接,纯 Go sqlite)"
 mkdir -p "$BIN_DIR"
 for arch in amd64 arm64; do
   echo "    GOOS=linux GOARCH=${arch}"
-  CGO_ENABLED=0 GOOS=linux GOARCH=${arch} \
+  # GOWORK=off:保证构建严格按 go.mod 钉版(否则 hub go.work 联编本地 core main,
+  # 产物含未发布代码且不可复现——真机修复到位性依赖钉版)。
+  CGO_ENABLED=0 GOWORK=off GOOS=linux GOARCH=${arch} \
     go build -C "$ROOT" -ldflags="${LDFLAGS}" \
     -o "$BIN_DIR/pigeonbox-linux-${arch}" ./cmd/fnos-adapter
 done

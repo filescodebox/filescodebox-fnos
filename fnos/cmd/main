@@ -102,6 +102,17 @@ PYEOF
     fi
 }
 
+# app.log 轮转:超 10MB 截尾保留最近 1MB(hertz 路由 debug 日志较肥,防无限增长)。
+rotate_log() {
+    [ -f "${LOG_FILE}" ] || return 0
+    local size
+    size=$(stat -c%s "${LOG_FILE}" 2>/dev/null || stat -f%z "${LOG_FILE}" 2>/dev/null || echo 0)
+    if [ "${size}" -gt 10485760 ]; then
+        tail -c 1048576 "${LOG_FILE}" > "${LOG_FILE}.tmp" 2>/dev/null \
+            && mv "${LOG_FILE}.tmp" "${LOG_FILE}"
+    fi
+}
+
 start_process() {
     if status; then
         return 0
@@ -112,12 +123,24 @@ start_process() {
         log_msg "binary not executable: $BIN"
         return 1
     fi
+    rotate_log
     prepare_env
     reset_admin_if_requested
     log_msg "Starting process (${ARCH}) on port ${FCB_SERVER_PORT} ..."
     "$BIN" --config "$APP_ROOT/target/configs/config.yaml" \
         --static "$APP_ROOT/target/www" >> "${LOG_FILE}" 2>&1 &
     printf "%s" "$!" > "${PID_FILE}"
+    # 启动健康等待:最多 10s 探测 /ping,未就绪记日志(appcenter 会以 status 复核)
+    local waited=0
+    while [ $waited -lt 10 ]; do
+        if curl -s -m 2 "http://127.0.0.1:${FCB_SERVER_PORT}/ping" 2>/dev/null | grep -q pong; then
+            log_msg "health check ok after ${waited}s"
+            return 0
+        fi
+        sleep 1
+        waited=$((waited + 1))
+    done
+    log_msg "warn: /ping not ready after ${waited}s (process may still be migrating)"
     return 0
 }
 
