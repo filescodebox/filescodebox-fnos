@@ -1,10 +1,17 @@
 #!/bin/bash
-# 配置向导提交回调:新凭证写入数据目录 .env(逻辑与 install_callback 一致),重启应用生效。
+# 配置向导提交回调:向导字段写入数据目录 .env(逻辑与 install_callback 一致),重启应用生效。
+#
+# 字段契约(wizard/config 与 install 一致):
+#   FNOS_APPID/FNOS_APPSECRET  飞牛集成(留空=降级模式,分享功能完整)
+#   FCB_JWT_SECRET             留空沿用自动生成
+#   FCB_ADMIN_PASSWORD         非空=重置管理员密码为该值(置 .admin_reset 标记,
+#                              cmd/main 启动前删 admin 用户,core 按 env 重建);留空=不改动
+#   FCB_SERVER_PORT            服务端口(同步安装目录 manifest.service_port 供框架入口探测;
+#                              进程监听端口由 cmd/main prepare_env 消费)
 #
 # 优先 ${TRIM_PKGVAR}/.env(数据卷,升级保留);目录不可写时回退包根
-# ${TRIM_APPDEST}/.env(cmd/main 两处都找)。写失败不阻断安装——凭证
-# 可随时在应用设置(配置向导)补填,留空=降级模式+JWT 自动生成。
-# FNOS_ENABLED 由凭证是否齐全推导,不单独向用户收集。
+# ${TRIM_APPDEST}/.env(cmd/main 两处都找)。写失败不阻断——凭证可随时在
+# 应用设置(配置向导)补填。FNOS_ENABLED 由凭证是否齐全推导,不单独向用户收集。
 
 quote() {
   printf '"%s"' "$(printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/\$/\\$/g')"
@@ -18,6 +25,8 @@ FNOS_ENABLED=$(quote "$ENABLED")
 FNOS_APPID=$(quote "$FNOS_APPID")
 FNOS_APPSECRET=$(quote "$FNOS_APPSECRET")
 FCB_JWT_SECRET=$(quote "$FCB_JWT_SECRET")
+FCB_ADMIN_PASSWORD=$(quote "$FCB_ADMIN_PASSWORD")
+FCB_SERVER_PORT=$(quote "$FCB_SERVER_PORT")
 EOF
 }
 
@@ -28,13 +37,28 @@ fi
 
 if mkdir -p "${TRIM_PKGVAR}" 2>/dev/null && write_env "${TRIM_PKGVAR}/.env" 2>/dev/null; then
   echo "wizard env written: ${TRIM_PKGVAR}/.env (FNOS_ENABLED=$ENABLED)"
-  exit 0
+else
+  if write_env "${TRIM_APPDEST}/.env" 2>/dev/null; then
+    echo "wizard env written (fallback): ${TRIM_APPDEST}/.env (FNOS_ENABLED=$ENABLED)"
+  else
+    echo "warn: could not write wizard env (both paths failed); fill via app settings later"
+  fi
 fi
 
-if write_env "${TRIM_APPDEST}/.env" 2>/dev/null; then
-  echo "wizard env written (fallback): ${TRIM_APPDEST}/.env (FNOS_ENABLED=$ENABLED)"
-  exit 0
+# 管理员密码重置请求:cmd/main 启动前消费(删 admin 用户,core 按 FCB_ADMIN_PASSWORD 重建)。
+if [ -n "$FCB_ADMIN_PASSWORD" ]; then
+  : > "${TRIM_PKGVAR}/.admin_reset" 2>/dev/null || : > "${TRIM_APPDEST}/.admin_reset" 2>/dev/null || true
+  echo "admin password reset requested (consumed on next start)"
 fi
 
-echo "warn: could not write wizard env (both paths failed); fill via app settings later"
+# 端口同步:更新安装目录 manifest 的 service_port,使框架入口/健康探测跟随新端口。
+# 进程监听端口由 .env/框架 env → cmd/main prepare_env 消费;manifest sed 失败不阻断
+# (进程侧端口仍生效,仅框架入口展示可能滞后)。
+if [ -n "$FCB_SERVER_PORT" ] && [ -r "${TRIM_APPDEST}/manifest" ] && [ -w "${TRIM_APPDEST}/manifest" ]; then
+  if sed -i.bak "s/^service_port=.*/service_port=${FCB_SERVER_PORT}/" "${TRIM_APPDEST}/manifest" 2>/dev/null; then
+    rm -f "${TRIM_APPDEST}/manifest.bak"
+    echo "manifest service_port synced to ${FCB_SERVER_PORT}"
+  fi
+fi
+
 exit 0

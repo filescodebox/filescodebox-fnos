@@ -1,5 +1,44 @@
 [
   {
+    "stepTitle": "管理员与端口",
+    "items": [
+      {
+        "type": "tips",
+        "field": "admin_tip",
+        "helpText": "管理员密码:留空=不改动;填写并提交=admin 账号密码立即重置为该值(应用自动重启生效)。服务端口:修改提交后应用以新端口重启,桌面入口随之更新;改回 12345 即恢复默认。"
+      },
+      {
+        "type": "password",
+        "field": "FCB_ADMIN_PASSWORD",
+        "label": "重置管理员密码(留空=不改动)",
+        "initValue": ""
+      },
+      {
+        "type": "text",
+        "field": "FCB_SERVER_PORT",
+        "label": "服务端口",
+        "initValue": "12345",
+        "helpText": "当前端口,可修改;保存后应用以新端口重启。"
+      }
+    ]
+  },
+  {
+    "stepTitle": "安全",
+    "items": [
+      {
+        "type": "tips",
+        "field": "jwt_tip",
+        "helpText": "JWT 密钥留空沿用自动生成的;更换后所有已登录会话失效,需重新登录。"
+      },
+      {
+        "type": "password",
+        "field": "FCB_JWT_SECRET",
+        "label": "JWT 密钥(留空沿用自动生成的)",
+        "initValue": ""
+      }
+    ]
+  },
+  {
     "stepTitle": "飞牛集成(可选)",
     "items": [
       {
@@ -17,12 +56,6 @@
         "type": "password",
         "field": "FNOS_APPSECRET",
         "label": "飞牛 Open API AppSecret",
-        "initValue": ""
-      },
-      {
-        "type": "password",
-        "field": "FCB_JWT_SECRET",
-        "label": "JWT 密钥(留空沿用自动生成的)",
         "initValue": ""
       }
     ]

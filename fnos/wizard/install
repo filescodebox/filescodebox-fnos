@@ -1,5 +1,36 @@
 [
   {
+    "stepTitle": "管理员与端口",
+    "items": [
+      {
+        "type": "password",
+        "field": "FCB_ADMIN_PASSWORD",
+        "label": "管理员密码",
+        "initValue": "",
+        "helpText": "admin 账号的登录密码。留空=使用默认密码 admin123(仅限内网试用的弱默认,建议务必修改);填写=以此值初始化/重置管理员密码。安装后可随时在应用设置的配置面板重新提交以重置。"
+      },
+      {
+        "type": "text",
+        "field": "FCB_SERVER_PORT",
+        "label": "服务端口",
+        "initValue": "12345",
+        "helpText": "Web UI 与 API 的监听端口,默认 12345。安装后可在应用设置的配置面板修改(保存后应用自动重启生效)。"
+      }
+    ]
+  },
+  {
+    "stepTitle": "安全",
+    "items": [
+      {
+        "type": "password",
+        "field": "FCB_JWT_SECRET",
+        "label": "JWT 密钥(留空自动生成)",
+        "initValue": "",
+        "helpText": "留空时应用自动生成强密钥并保存在数据卷,重装/清空数据卷会使已登录状态失效。"
+      }
+    ]
+  },
+  {
     "stepTitle": "飞牛集成(可选)",
     "items": [
       {
@@ -18,18 +49,6 @@
         "field": "FNOS_APPSECRET",
         "label": "飞牛 Open API AppSecret",
         "initValue": ""
-      }
-    ]
-  },
-  {
-    "stepTitle": "安全",
-    "items": [
-      {
-        "type": "password",
-        "field": "FCB_JWT_SECRET",
-        "label": "JWT 密钥(留空自动生成)",
-        "initValue": "",
-        "helpText": "留空时应用自动生成强密钥并保存在数据卷,重装/清空数据卷会使已登录状态失效。"
       }
     ]
   }
