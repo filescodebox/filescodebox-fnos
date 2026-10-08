@@ -50,7 +50,7 @@ ARG COMMIT=unknown
 ARG BUILD_TIME=unknown
 
 # 编译(静态链接 musl;CGO 仅预留,当前为纯 Go sqlite 驱动)
-RUN CGO_ENABLED=1 go build \
+RUN CGO_ENABLED=1 GOWORK=off go build \
     -ldflags="-w -s \
     -X 'github.com/pigeonbox/kit/version.Version=${VERSION}' \
     -X 'github.com/pigeonbox/kit/version.BuildCommit=${COMMIT}' \
