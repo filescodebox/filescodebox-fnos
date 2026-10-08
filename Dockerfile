@@ -27,7 +27,7 @@ RUN npm ci --no-audit --no-fund \
     && npx vite build --outDir /frontend-dist --emptyOutDir
 
 # ========== Stage 2: 构建 fnos-adapter(含 PigeonBox 库) ==========
-FROM golang:1.26-alpine AS builder
+FROM golang:1.27-alpine AS builder
 
 ARG GOPROXY=https://goproxy.cn,direct
 ENV GOPROXY=${GOPROXY}
