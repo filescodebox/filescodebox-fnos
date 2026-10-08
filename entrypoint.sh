@@ -7,7 +7,7 @@
 # 业务进程恒以 uid 1000 运行(与既有数据卷语义一致)。
 set -e
 
-DATA_DIR=${FCB_DATA_PATH:-/app/data}
+DATA_DIR=${PB_DATA_PATH:-/app/data}
 
 if [ "$(id -u)" = "0" ]; then
     mkdir -p "$DATA_DIR"

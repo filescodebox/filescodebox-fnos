@@ -9,13 +9,13 @@
       },
       {
         "type": "password",
-        "field": "FCB_ADMIN_PASSWORD",
+        "field": "PB_ADMIN_PASSWORD",
         "label": "重置管理员密码(留空=不改动)",
         "initValue": ""
       },
       {
         "type": "text",
-        "field": "FCB_SERVER_PORT",
+        "field": "PB_SERVER_PORT",
         "label": "服务端口",
         "initValue": "12345",
         "helpText": "当前端口,可修改;保存后应用以新端口重启。"
@@ -32,7 +32,7 @@
       },
       {
         "type": "password",
-        "field": "FCB_JWT_SECRET",
+        "field": "PB_JWT_SECRET",
         "label": "JWT 密钥(留空沿用自动生成的)",
         "initValue": ""
       }

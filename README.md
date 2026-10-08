@@ -52,7 +52,7 @@
 ```bash
 docker run -d --name pigeonbox -p 12345:12345 \
   -v ./data:/app/data \
-  -e FCB_SERVER_HOST=0.0.0.0 -e FCB_PRODUCTION=1 \
+  -e PB_SERVER_HOST=0.0.0.0 -e PB_PRODUCTION=1 \
   ghcr.io/pigeonbox/fnos:1.14
 ```
 

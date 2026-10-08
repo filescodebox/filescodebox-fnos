@@ -6,10 +6,10 @@
 - `install` 安装时收集;`config` 安装后从应用设置随时改(两份字段一致)
 - 字段即 env 契约(compose/adapter 直接消费,故未用 wizard_ 前缀):
   `FNOS_APPID` / `FNOS_APPSECRET`(留空=降级模式,分享功能完整)、
-  `FCB_JWT_SECRET`(留空=adapter 自动生成并持久化到数据卷)、
-  `FCB_ADMIN_PASSWORD`(非空=admin 密码安装设定/重置:callback 置 `.admin_reset` 标记,
+  `PB_JWT_SECRET`(留空=adapter 自动生成并持久化到数据卷)、
+  `PB_ADMIN_PASSWORD`(非空=admin 密码安装设定/重置:callback 置 `.admin_reset` 标记,
   cmd/main 启动前删 users.admin,core 按 env 重建;留空=不改动)、
-  `FCB_SERVER_PORT`(服务端口,默认 12345;config_callback 同步解包目录 manifest.service_port,
+  `PB_SERVER_PORT`(服务端口,默认 12345;config_callback 同步解包目录 manifest.service_port,
   cmd/main prepare_env 消费——端口 env 优先,勿在脚本内无条件覆盖)
 
 ## 已知限制

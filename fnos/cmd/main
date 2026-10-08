@@ -37,13 +37,13 @@ log_msg() {
 # 三个路径 env 全部落 TRIM_PKGVAR:包内 config.yaml 是 Docker 路径(/app/data,
 # 与 ghcr 镜像共用单源),env 优先级高于 yaml。
 prepare_env() {
-    export FCB_DATA_PATH="${TRIM_PKGVAR}/data"
-    export FCB_DATABASE_DB_NAME="${TRIM_PKGVAR}/data/fileCodeBox.db"
-    export FCB_STORAGE_PATH="${TRIM_PKGVAR}/data/uploads"
-    export FCB_SERVER_HOST=0.0.0.0
-    # 端口:向导/配置面板注入的 FCB_SERVER_PORT 优先(框架在进程启动前注入 env),
+    export PB_DATA_PATH="${TRIM_PKGVAR}/data"
+    export PB_DATABASE_DB_NAME="${TRIM_PKGVAR}/data/fileCodeBox.db"
+    export PB_STORAGE_PATH="${TRIM_PKGVAR}/data/uploads"
+    export PB_SERVER_HOST=0.0.0.0
+    # 端口:向导/配置面板注入的 PB_SERVER_PORT 优先(框架在进程启动前注入 env),
     # 缺省回退 12345——勿无条件覆盖,否则向导改端口永远不生效。
-    export FCB_SERVER_PORT="${FCB_SERVER_PORT:-12345}"
+    export PB_SERVER_PORT="${PB_SERVER_PORT:-12345}"
     # 向导凭证(install/config_callback 写入,优先数据卷、回退包根);
     # 缺省时 adapter 降级模式+JWT 自动生成
     local env_file=""
@@ -58,27 +58,27 @@ prepare_env() {
         . "$env_file"
         set +a
     fi
-    mkdir -p "${FCB_DATA_PATH}"
+    mkdir -p "${PB_DATA_PATH}"
 }
 
 # 管理员密码重置(.admin_reset 标记由 install/config_callback 在密码字段非空时创建):
-# 删除 users 表 admin 行——core 启动语义为「库中无管理员时按 FCB_ADMIN_PASSWORD 重建」,
+# 删除 users 表 admin 行——core 启动语义为「库中无管理员时按 PB_ADMIN_PASSWORD 重建」,
 # 故随后的进程启动即以向导/配置面板提交的新密码完成重置。
 # python3(fnOS 系统自带)+标准库 sqlite3,无第三方依赖;失败保留标记并记日志(下次启动重试)。
 reset_admin_if_requested() {
     [ -f "${TRIM_PKGVAR}/.admin_reset" ] || return 0
-    if [ -z "${FCB_ADMIN_PASSWORD:-}" ]; then
-        log_msg "admin reset requested but FCB_ADMIN_PASSWORD empty; keep marker"
+    if [ -z "${PB_ADMIN_PASSWORD:-}" ]; then
+        log_msg "admin reset requested but PB_ADMIN_PASSWORD empty; keep marker"
         return 0
     fi
     if ! command -v python3 >/dev/null 2>&1; then
         log_msg "admin reset skipped: python3 not found; keep marker"
         return 0
     fi
-    if FCB_DB="${FCB_DATABASE_DB_NAME}" FCB_PWD_HASH="$(printf '%s' "${FCB_ADMIN_PASSWORD}" | sha256sum | cut -d' ' -f1)" \
+    if PB_DB="${PB_DATABASE_DB_NAME}" PB_PWD_HASH="$(printf '%s' "${PB_ADMIN_PASSWORD}" | sha256sum | cut -d' ' -f1)" \
         python3 - <<'PYEOF'
 import os, sqlite3, datetime
-db = os.environ["FCB_DB"]
+db = os.environ["PB_DB"]
 con = sqlite3.connect(db)
 cur = con.cursor()
 cur.execute("DELETE FROM users WHERE username = 'admin'")
@@ -90,13 +90,13 @@ con.close()
 PYEOF
     then
         rm -f "${TRIM_PKGVAR}/.admin_reset"
-        log_msg "admin user removed; will be recreated from FCB_ADMIN_PASSWORD on startup"
+        log_msg "admin user removed; will be recreated from PB_ADMIN_PASSWORD on startup"
         # 消费后清空 .env 中的明文密码(避免长期留存)。注意只清文件、不清 export——
         # 紧随其后的 server 启动仍需该 env 完成 admin 重建;下次启动时密码已入库,空 env 无碍。
         local ef=""
         if [ -r "${TRIM_PKGVAR}/.env" ]; then ef="${TRIM_PKGVAR}/.env"; elif [ -r "${APP_ROOT}/.env" ]; then ef="${APP_ROOT}/.env"; fi
         if [ -n "$ef" ] && [ -w "$ef" ]; then
-            sed -i 's/^FCB_ADMIN_PASSWORD=.*/FCB_ADMIN_PASSWORD=""/' "$ef"
+            sed -i 's/^PB_ADMIN_PASSWORD=.*/PB_ADMIN_PASSWORD=""/' "$ef"
         fi
     else
         log_msg "admin reset SQL failed; keep marker for next start"
@@ -133,7 +133,7 @@ watchdog_loop() {
             failures=0
             continue
         fi
-        if curl -s -m 3 "http://127.0.0.1:${FCB_SERVER_PORT}/ping" 2>/dev/null | grep -q pong; then
+        if curl -s -m 3 "http://127.0.0.1:${PB_SERVER_PORT}/ping" 2>/dev/null | grep -q pong; then
             failures=0
             continue
         fi
@@ -177,14 +177,14 @@ start_process() {
     rotate_log
     prepare_env
     reset_admin_if_requested
-    log_msg "Starting process (${ARCH}) on port ${FCB_SERVER_PORT} ..."
+    log_msg "Starting process (${ARCH}) on port ${PB_SERVER_PORT} ..."
     "$BIN" --config "$APP_ROOT/target/configs/config.yaml" \
         --static "$APP_ROOT/target/www" >> "${LOG_FILE}" 2>&1 &
     printf "%s" "$!" > "${PID_FILE}"
     # 启动健康等待:最多 10s 探测 /ping,未就绪记日志(appcenter 会以 status 复核)
     local waited=0
     while [ $waited -lt 10 ]; do
-        if curl -s -m 2 "http://127.0.0.1:${FCB_SERVER_PORT}/ping" 2>/dev/null | grep -q pong; then
+        if curl -s -m 2 "http://127.0.0.1:${PB_SERVER_PORT}/ping" 2>/dev/null | grep -q pong; then
             log_msg "health check ok after ${waited}s"
             break
         fi

@@ -29,22 +29,22 @@ import (
 
 // 版本信息:kit/version 包内变量,由 Dockerfile -ldflags -X 注入,缺省为 dev。
 
-// ensureJWTSecret 保证 FCB_JWT_SECRET 存在:未显式配置时自动生成强密钥,
+// ensureJWTSecret 保证 PB_JWT_SECRET 存在:未显式配置时自动生成强密钥,
 // 持久化到数据目录(.jwt_secret,权限 0600),重启复用(已签发 token 不失效)。
 // 依据:core 的 validateSecrets 在 secret 缺失/弱值时拒绝启动(安全基线);
 // NAS 场景用户不应被迫手工生成密钥,故在库拉起前注入。
 func ensureJWTSecret() {
-	if os.Getenv("FCB_JWT_SECRET") != "" {
+	if os.Getenv("PB_JWT_SECRET") != "" {
 		return
 	}
-	dataDir := os.Getenv("FCB_DATA_PATH")
+	dataDir := os.Getenv("PB_DATA_PATH")
 	if dataDir == "" {
 		dataDir = "./data"
 	}
 	secretPath := filepath.Join(dataDir, ".jwt_secret")
 	if b, err := os.ReadFile(secretPath); err == nil {
 		if s := strings.TrimSpace(string(b)); len(s) >= 32 {
-			_ = os.Setenv("FCB_JWT_SECRET", s)
+			_ = os.Setenv("PB_JWT_SECRET", s)
 			return
 		}
 	}
@@ -60,7 +60,7 @@ func ensureJWTSecret() {
 		_, _ = os.Stderr.WriteString("无法持久化 JWT 密钥(" + secretPath + "): " + err.Error() + "\n")
 		os.Exit(1)
 	}
-	_ = os.Setenv("FCB_JWT_SECRET", secret)
+	_ = os.Setenv("PB_JWT_SECRET", secret)
 }
 
 func main() {
