@@ -55,7 +55,7 @@ RUN CGO_ENABLED=1 GOWORK=off go build \
     -o /out/fnos-adapter ./cmd/fnos-adapter
 
 # ========== Stage 3: 运行时镜像 ==========
-FROM alpine:3.19
+FROM alpine:3.24
 
 # su-exec:entrypoint 以 root 修正数据卷归属后降权 uid 1000(见 entrypoint.sh)
 RUN apk --no-cache add ca-certificates tzdata sqlite su-exec
