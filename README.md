@@ -16,7 +16,7 @@
 | **业务全功能** | 单进程库式调用 [core](https://github.com/pigeonbox/core) `bootstrap.Bootstrap()`，文本/文件分享、取件码、多云存储全部可用 | ✅ |
 | **数据落 NAS** | 上传文件 + SQLite 全部落在用户可见的共享目录，文件管理器可直接查看/备份 | ✅ |
 | **开箱即用** | JWT 密钥自动生成并持久化；默认免 Redis（core v0.14.0 单机内存模式，取件码映射存进程内、重启/升级失效）；安装向导设管理员密码与服务端口 | ✅ |
-| **降级模式** | 非 fnOS 环境（裸进程/Docker）自动降级，飞牛集成关闭、业务完整运行 | ✅ |
+| **降级模式** | 非 fnOS 环境（裸进程开发调试）自动降级，飞牛集成关闭、业务完整运行 | ✅ |
 | **SSO 免登录** | 统一网关 `app.sock` X-Trim-* 可信用户头免登录，飞牛账号映射为本系统用户 | ✅ v1.14.6 真机验证 |
 | **授权目录联动** | 官方后端 API（trim.file.*）授权目录、文件管理器互通 | ✅ v1.14.6 |
 | **主题/语言跟随** | 前端跟随 fnOS 主题与系统语言（@trimjs/web-app 微应用） | ✅ v1.14.6 |
@@ -46,7 +46,7 @@
 2. 飞牛应用中心 → 手动安装 → 上传 fpk，按向导完成安装（飞牛凭证可留空，随时在应用设置补填）
 3. 桌面入口打开即用；数据在应用数据目录（NAS 共享路径）下的 `data/`（上传文件/SQLite/JWT 密钥；取件码映射存进程内存，无独立文件）
 
-> v1.2.7 起 fpk 为原生进程模式：包内自带双架构静态二进制+内嵌前端，安装运行免 Docker 免拉镜像；仅下方「Docker 直接部署」需要设备可拉取 `ghcr.io/pigeonbox/fnos`。
+> v1.2.7 起 fpk 为原生进程模式：包内自带双架构静态二进制+内嵌前端，安装运行免 Docker 免拉镜像。2026-10-09 起本仓**只发布原生 fpk**，Docker 镜像链路已整体移除。
 
 ## 应用内配置（安装后可改）
 
@@ -62,15 +62,6 @@
 
 **数据备份与恢复**：升级时自动快照业务库（`data/fileCodeBox.db.bak-<时间戳>`，轮转保留最近 3 份）。手动恢复：应用设置停止应用 → 用备份覆盖 `data/fileCodeBox.db` → 启动应用。进程内置看门狗（每 30s 健康探测，无响应自动重启/崩溃自动拉起），日志见应用数据目录 `app.log`。
 
-## Docker 直接部署（不经飞牛应用中心）
-
-```bash
-docker run -d --name pigeonbox -p 12345:12345 \
-  -v ./data:/app/data \
-  -e PB_SERVER_HOST=0.0.0.0 -e PB_PRODUCTION=1 \
-  ghcr.io/pigeonbox/fnos:1.14
-```
-
 ## 打包 .fpk
 
 ```bash
@@ -78,7 +69,7 @@ docker run -d --name pigeonbox -p 12345:12345 \
 cd fnos && fnpack build     # 产物 pigeonbox.fpk
 ```
 
-`fnos/` 目录即应用包定义，**已对齐飞牛官方规范**（manifest / app/docker / app/ui 入口+图标 / cmd 生命周期脚本 / wizard 向导 / config 资源与权限）。CI 每次推送都会跑 `fnpack build` 校验并产出 fpk 构件。
+`fnos/` 目录即应用包定义，**已对齐飞牛官方规范**（manifest / app/ui 入口+图标 / cmd 生命周期脚本 / wizard 向导 / config 资源与权限）。CI 每次推送都会跑 `fnpack build` 校验并产出 fpk 构件。
 
 注意：发版版本真相源=仓根 `VERSION` 文件(由 hub 发布列车 `scripts/release-train.sh bump` 统一维护)，`fnos/manifest` 的 `version` 与之同步,勿单手改一处。
 
@@ -98,18 +89,18 @@ cd fnos && fnpack build     # 产物 pigeonbox.fpk
 # 工作区内(hub 根 make setup 拉齐全部模块仓后):联编本地 core main
 cd fnos && go build ./... && go test ./...
 
-# 独立构建:钉 go.mod 正式版本(与 CI/Docker 一致)
+# 独立构建:钉 go.mod 正式版本(与 CI 一致)
 GOWORK=off go test ./...
 
 # 降级模式运行(业务全功能,飞牛能力关闭)
 go run ./cmd/fnos-adapter
 
 # 启用飞牛深度集成(无需凭证:由 fnOS 运行环境自动探测 TRIM_* 变量;
-# 裸进程/Docker 等 fnOS 外环境自动降级,业务全功能)
+# 裸进程等 fnOS 外环境自动降级,业务全功能)
 go run ./cmd/fnos-adapter
 ```
 
-或使用 `make build / test / run / fpack / docker`。
+或使用 `make build / test / run / fpack`。
 
 ## 目录结构
 
@@ -122,19 +113,17 @@ fnos/
 │  ├─ internal/fnosconfig/      配置加载(独立子包,无环)
 │  └─ sso/ storage/             SSO 映射(oidc_sub=fnos:<uid>)与授权目录联动
 ├─ web/                         fnOS 宿主适配器(@trimjs/web-app)+frontend-core tgz 自包含前端(构建→fnos/app/www)
-├─ fnos/                        飞牛 .fpk 应用包定义(官方规范,原生进程模式)
-│  ├─ manifest                  应用元数据(version/platform/入口/端口/micro_app)
-│  ├─ app/{bin,www,configs}/    双架构静态二进制+内嵌前端+只读配置(build-native.sh 产出)
-│  ├─ app/ui/                   桌面入口(config)与图标(images/)
-│  ├─ cmd/                      生命周期脚本(install/upgrade/uninstall/config)
-│  ├─ wizard/                   安装/配置向导(管理员密码/服务端口/JWT 密钥)
-│  └─ config/                   权限(privilege)与资源(resource: data-share)
-└─ Dockerfile                   多架构镜像构建(amd64/arm64;内嵌前端+entrypoint 降权)
+└─ fnos/                        飞牛 .fpk 应用包定义(官方规范,原生进程模式)
+   ├─ manifest                  应用元数据(version/platform/入口/端口/micro_app)
+   ├─ app/{bin,www,configs}/    双架构静态二进制+内嵌前端+只读配置(build-native.sh 产出)
+   ├─ app/ui/                   桌面入口(config)与图标(images/)
+   ├─ cmd/                      生命周期脚本(install/upgrade/uninstall/config)
+   ├─ wizard/                   安装/配置向导(管理员密码/服务端口/JWT 密钥)
+   └─ config/                   权限(privilege)与资源(resource: data-share)
 ```
 
-> 前端内嵌（v1.2.7 起）：Dockerfile 现场构建 `pigeonbox/frontend` 产物入镜像
-> `www/`，adapter 经 `bootstrap.WithStaticDir` 同端口服务 SPA——桌面图标打开即用。
-> `FRONTEND_REF` 构建参数可钉前端分支/tag（默认 main）。
+> 前端内嵌（v1.2.7 起）：`web/` 自包含构建产物落入 `fnos/app/www`，
+> adapter 经 `bootstrap.WithStaticDir` 同端口服务 SPA——桌面图标打开即用。
 
 ## 版本对应
 
@@ -150,7 +139,7 @@ fnos/
 | v0.3.x | v0.7.6 | 仓改名 fnos——镜像路径切换 `ghcr.io/pigeonbox/fnos`，go module path 同步 |
 | v0.2.x | v0.5.0 → v0.7.6 | 上传治理/多云存储/P0 修复；fnpack 规范化 + 内置 Redis + 向导；0.2.6 升 core v0.7.6 |
 
-镜像：`ghcr.io/pigeonbox/fnos`（tag 跟随 Release；`0.2.x` 及更早镜像名为 `pigeonbox-fnos`、`0.1.x` 为 `pigeonbox-fnos`，均已冻结）。
+Docker 镜像：2026-10-09 起**停止发布**（本仓只发原生 fpk）；`ghcr.io/pigeonbox/fnos` 冻结在 v1.14.6，更早 `pigeonbox-fnos` 冻结在 v0.2.6 / v0.2.1。
 
 ## 路线图
 

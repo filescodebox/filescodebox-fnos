@@ -11,7 +11,7 @@
 //   通知中心 / 内网穿透 — 待官方开放后另行接入;此前旧桩(FNOS_APPID/SECRET
 //   凭证模型)与真实平台不符,已整体移除。
 //
-// 降级语义:非 fnOS 环境(Docker/裸进程,无 TRIM_* 变量)一切自动关闭,
+// 降级语义:非 fnOS 环境(裸进程开发调试,无 TRIM_* 变量)一切自动关闭,
 // /api/fnos/capabilities 如实回报;PigeonBox 业务不受任何影响。
 package adapter
 

@@ -27,7 +27,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// 版本信息:kit/version 包内变量,由 Dockerfile -ldflags -X 注入,缺省为 dev。
+// 版本信息:kit/version 包内变量,由构建脚本(build-native.sh)-ldflags -X 注入,缺省为 dev。
 
 // ensureJWTSecret 保证 PB_JWT_SECRET 存在:未显式配置时自动生成强密钥,
 // 持久化到数据目录(.jwt_secret,权限 0600),重启复用(已签发 token 不失效)。
@@ -126,8 +126,8 @@ func main() {
 		h.Spin()
 	}()
 
-	// 5. 优雅退出:给在途请求 5s 排空窗口,超时强退(避免卡死容器停止流程,
-	//    docker stop 默认 10s 后 SIGKILL,留足余量)。
+	// 5. 优雅退出:给在途请求 5s 排空窗口,超时强退(避免卡死应用停止流程,
+	//    守护方超时后 SIGKILL,留足余量)。
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit

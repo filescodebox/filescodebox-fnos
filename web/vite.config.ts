@@ -1,4 +1,4 @@
-// fnOS 内嵌前端构建(fpk 的 app/www 与 fnos Docker 镜像的 web 产物同源)。
+// fnOS 内嵌前端构建(产物→fpk 的 app/www)。
 // 结构=壳入口(注入 fnOS 宿主适配器)+公共应用 core(tgz 源码形态编译)。
 // 与 qnap 仓的 web 目录同构平行(2026-10-09 前端拆仓:平台适配器归各平台仓)。
 import { defineConfig } from 'vite'

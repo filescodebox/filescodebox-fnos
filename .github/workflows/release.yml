@@ -1,72 +1,22 @@
 name: Release
-# 打 v* tag → 三路发布:
-#   1. release: 多架构镜像推 ghcr.io/pigeonbox/fnos
-#   2. fpk + attach-fpk: fnpack 打应用包,挂本仓 Release(GITHUB_TOKEN 同仓写即可)
-#   3. attach-to-hub: 回挂 fpk 到生态主仓 pigeonbox/pigeonbox 的 Release(tag fnos-v*,
+# 打 v* tag → 两路发布(2026-10-09 起只发原生 fpk,Docker 镜像链路已整体移除):
+#   1. fpk + attach-fpk: fnpack 打应用包,挂本仓 Release(GITHUB_TOKEN 同仓写即可)
+#   2. attach-to-hub: 回挂 fpk 到生态主仓 pigeonbox/pigeonbox 的 Release(tag fnos-v*,
 #      与 desktop 回挂 desktop-v* 同模式——所有二进制产物统一在主仓 Releases 可下载;
 #      跨仓写用 FNOS_PAT;断链必须响(2026-10-08 拔除 continue-on-error——PAT 失效静默放行只会让 hub 统一出口缺资产)
-# workflow_dispatch: 传 version(现有 tag 名,如 v0.3.0)对该版本手动重跑 fpk 打包+双挂(不发镜像),用于验证/补救
-# (2026-10-04 随仓改名 pigeonbox-fnos → fnos 对齐;旧镜像 pigeonbox-fnos 冻结在 v0.2.6,更早 pigeonbox-fnos 冻结在 v0.2.1)
+# workflow_dispatch: 传 version(现有 tag 名,如 v0.3.0)对该版本手动重跑 fpk 打包+双挂,用于验证/补救
+# (2026-10-04 随仓改名 pigeonbox-fnos → fnos 对齐;ghcr 镜像 ghcr.io/pigeonbox/fnos 停止发布,冻结在 v1.14.6)
 on:
   push:
     tags: ["v*"]
   workflow_dispatch:
     inputs:
       version:
-        description: '目标版本(现有 tag 名,如 v0.3.0)。仅重跑 fpk 打包+双挂,不发镜像'
+        description: '目标版本(现有 tag 名,如 v0.3.0)。仅重跑 fpk 打包+双挂'
         required: true
         type: string
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE: ghcr.io/pigeonbox/fnos
-
 jobs:
-  release:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - name: 读依赖钉版(DEPS.env;前列车 tag 无此文件时回退 main)
-        run: |
-          if [ -f DEPS.env ]; then grep -E '^FRONTEND_REF=' DEPS.env >> "$GITHUB_ENV"
-          else echo "::warning::无 DEPS.env(前列车 tag),FRONTEND_REF 回退 main"; echo "FRONTEND_REF=main" >> "$GITHUB_ENV"; fi
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.IMAGE }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          # buildx 默认附带的 provenance 认证清单会使 GitHub Packages 页面渲染
-          # 500(注册表拉取不受影响,仅 Web UI 坏)。关掉以保证包页可开、可见性可改。
-          provenance: false
-          build-args: |
-            VERSION=${{ github.ref_name }}
-            COMMIT=${{ github.sha }}
-            BUILD_TIME=${{ steps.meta.outputs.date }}
-            FRONTEND_REF=${{ env.FRONTEND_REF }}
-            GOPROXY=https://proxy.golang.org,direct
-
   fpk:
     runs-on: ubuntu-latest
     steps:
@@ -82,10 +32,6 @@ jobs:
           fi
           MV=$(awk -F= '$1=="version"{print $2}' fnos/manifest)
           [ "$MV" = "${VER#v}" ] || { echo "::error::fnos/manifest version=$MV ≠ tag $VER——发版走 hub 列车 bump,勿手改 manifest"; exit 1; }
-      - name: 读依赖钉版(DEPS.env;前列车 tag 无此文件时回退 main)
-        run: |
-          if [ -f DEPS.env ]; then grep -E '^(CORE_PIN|FRONTEND_REF)=' DEPS.env >> "$GITHUB_ENV"
-          else echo "::warning::无 DEPS.env(前列车 tag),FRONTEND_REF 回退 main"; echo "FRONTEND_REF=main" >> "$GITHUB_ENV"; fi
       - uses: actions/setup-go@v5
         with:
           go-version: "1.26"
@@ -93,7 +39,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: 原生产物构建(双架构二进制+前端,版本注入与镜像同源)
+      - name: 原生产物构建(双架构二进制+前端,版本注入随构建脚本)
         env:
           VERSION: ${{ inputs.version || github.ref_name }}
           COMMIT: ${{ github.sha }}
@@ -129,7 +75,7 @@ jobs:
           gh release view "${VER}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1 || \
             gh release create "${VER}" --repo "${GITHUB_REPOSITORY}" \
               --title "PigeonBox fnOS ${VER}" \
-              --notes "飞牛 fnOS 原生应用包(见 Assets pigeonbox.fpk,内含双架构二进制+前端,安装/运行免 Docker 免镜像拉取)。Docker 部署走 ghcr.io/pigeonbox/fnos(tag 跟随本 Release)。"
+              --notes "飞牛 fnOS 原生应用包(见 Assets pigeonbox.fpk,内含双架构二进制+前端,安装/运行免 Docker 免镜像拉取)。"
           gh release upload "${VER}" fpk/pigeonbox.fpk --repo "${GITHUB_REPOSITORY}" --clobber
 
   attach-to-hub:
@@ -147,7 +93,7 @@ jobs:
           VER: ${{ inputs.version || github.ref_name }}
         run: |
           NOTES=$(printf '%s\n\n---\n🗂 **组件仓库**: [pigeonbox/fnos](https://github.com/pigeonbox/fnos) · **完整变更日志**: [%s](https://github.com/pigeonbox/fnos/releases/tag/%s)\n🌐 **生态总览 / Latest**: [pigeonbox/pigeonbox](https://github.com/pigeonbox/pigeonbox/releases/latest)\n' \
-            "飞牛 fnOS 原生应用包(见 Assets,免 Docker 免镜像拉取)。Docker 部署: ghcr.io/pigeonbox/fnos。" "${VER}" "${VER}")
+            "飞牛 fnOS 原生应用包(见 Assets,免 Docker 免镜像拉取)。" "${VER}" "${VER}")
           gh release view "${TAG}" --repo pigeonbox/pigeonbox >/dev/null 2>&1 || \
             gh release create "${TAG}" --repo pigeonbox/pigeonbox \
               --title "PigeonBox fnOS ${VER}" \

@@ -18,7 +18,6 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PACK_DIR="$ROOT/fnos"
 BIN_DIR="$PACK_DIR/app/bin"
 WWW_DIR="$PACK_DIR/app/www"
-FRONTEND_REF=${FRONTEND_REF:-main}
 
 VERSION=${VERSION:-"$(git -C "$ROOT" describe --tags --always 2>/dev/null || echo dev)"}
 COMMIT=${COMMIT:-"$(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)"}

@@ -64,7 +64,7 @@ type Config struct {
 //   - PB_GATEWAY_PREFIX 网关前缀覆盖(缺省 /app/pigeonbox)
 //   - PB_SERVER_PORT    业务端口(缺省 12345)
 //
-// Docker/非 fnOS 环境无 TRIM_* 变量,配置自然全降级——业务不受影响。
+// 非 fnOS 环境(裸进程)无 TRIM_* 变量,配置自然全降级——业务不受影响。
 func LoadConfig() Config {
 	cfg := Config{
 		AppName:       getenvOr("TRIM_APPNAME", DefaultAppName),

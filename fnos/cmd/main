@@ -34,8 +34,8 @@ log_msg() {
 }
 
 # 运行环境准备:在当前 shell 内导出(勿经命令替换子壳——export 传不出子壳)。
-# 三个路径 env 全部落 TRIM_PKGVAR:包内 config.yaml 是 Docker 路径(/app/data,
-# 与 ghcr 镜像共用单源),env 优先级高于 yaml。
+# 三个路径 env 全部落 TRIM_PKGVAR(包内 config.yaml 的 /app/data 只是占位默认,
+# env 优先级高于 yaml,fpk 运行时恒被覆盖)。
 prepare_env() {
     export PB_DATA_PATH="${TRIM_PKGVAR}/data"
     export PB_DATABASE_DB_NAME="${TRIM_PKGVAR}/data/fileCodeBox.db"
