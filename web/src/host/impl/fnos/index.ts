@@ -89,9 +89,14 @@ const capabilities: HostCapabilities = {
   appSettings: false,
 }
 
-export const fnosHostAdapter: HostAdapter = {
+export const fnosHostAdapter = {
   name: '飞牛',
   capabilities,
+  // 0.1.6 SPI:宿主 SSO 登录端点——其 401 是「SSO 不可用」的预期安全失败,
+  // 请求层豁免刷新/跳登录页(cb1ff09 真机白屏修复,白名单自 core 下沉适配器声明)。
+  // 钉版类型 0.1.5 代际靠尾部 as HostAdapter 断言过多余属性检查;
+  // web 钉版随列车升 0.1.6 后可还原为类型标注。
+  ssoLoginPaths: ['/api/fnos/login'],
 
   async init() {
     const [caps, sdk] = await Promise.all([getFnosCapabilities(true), loadSdk()])
@@ -208,4 +213,4 @@ export const fnosHostAdapter: HostAdapter = {
   openExternal(url: string, target = '_blank'): Promise<boolean> {
     return withSdk((sdk) => sdk.openURL(url, target)).then((r) => r !== null)
   },
-}
+} as HostAdapter
