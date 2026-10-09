@@ -21,3 +21,6 @@ fnos/*.fpk
 fnos/app/bin/
 fnos/app/www/
 fnos/app/configs/
+
+# 上架材料包组装产物(assemble-store-package.sh)
+/dist/
