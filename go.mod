@@ -2,6 +2,8 @@ module github.com/pigeonbox/fnos
 
 go 1.26.5
 
+toolchain go1.26.9
+
 require (
 	github.com/cloudwego/hertz v0.9.6
 	github.com/pigeonbox/core v0.14.9
@@ -78,7 +80,7 @@ require (
 	golang.org/x/arch v0.24.0 // indirect
 	golang.org/x/crypto v0.57.0 // indirect
 	golang.org/x/image v0.43.0 // indirect
-	golang.org/x/net v0.59.0 // indirect
+	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/sync v0.23.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
 	golang.org/x/text v0.42.0 // indirect
