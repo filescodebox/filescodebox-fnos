@@ -1,5 +1,5 @@
 appname=pigeonbox
-version=1.14.3
+version=1.14.4
 display_name=PigeonBox
 platform=all
 maintainer=zhangyi
@@ -11,6 +11,7 @@ desktop_applaunchname=pigeonbox.main
 service_port=12345
 checkport=true
 desc=文件快递柜——匿名口令分享文本/文件,支持拖拽上传、多云存储后端;飞牛原生集成(数据落 NAS 共享目录/应用中心托管启停)。
+changelog=1.14.4: 发布列车 1.14.4(底层 core v0.14.9;前端 v0.15.7;详见 Release notes)。
 changelog=1.14.3: 安装向导/配置面板新增管理员密码(安装设定+随时重置)与服务端口配置;core 升钉 v0.14.8(取件历史双修复+6位码通道补记取件人与到件通知)。
 changelog=1.14.2: 发布列车 1.14.2(底层 core v0.14.8——取件历史双修复+取件码通道补记取件人与到件通知;前端 v0.15.6——首页取件/发送页拆分新 UI)。
 changelog=1.14.1: 底层 core v0.14.4 → v0.14.5 跟随(P0 修复:直传分享下载文件名丢失 filename=""——浏览器下载无名文件,中文名乱码;管理端文件名回退显示成分享码);前端跟随(首页聚焦重构+版本页脚+仪表盘配色治理+本地文件页禁用态引导)。
