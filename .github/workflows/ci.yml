@@ -38,6 +38,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: web 类型检查(2026-10-09 拆仓:web/ 自包含,依赖 frontend-core tgz)
+        run: cd web && npm ci --no-audit --no-fund && npm run typecheck
       - name: 原生产物构建(双架构二进制+前端)
         run: ./scripts/build-native.sh
       - name: 下载 fnpack(官方 CLI)
