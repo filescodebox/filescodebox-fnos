@@ -4,7 +4,7 @@
 [![Tag](https://img.shields.io/github/v/tag/pigeonbox/fnos)](https://github.com/pigeonbox/fnos/tags)
 [![License](https://img.shields.io/github/license/pigeonbox/fnos)](LICENSE)
 
-> [PigeonBox](https://github.com/pigeonbox/pigeonbox)（文件快递柜）的飞牛 fnOS 应用适配层——单容器库式集成 PigeonBox 全部业务，包装为可在飞牛 NAS 应用中心安装的第三方应用，并接入飞牛 Open API。
+> [PigeonBox](https://github.com/pigeonbox/pigeonbox)（文件快递柜）的飞牛 fnOS 应用适配层——单进程库式集成 PigeonBox 全部业务，包装为可在飞牛 NAS 应用中心安装的第三方应用，并接入飞牛 Open API。
 
 > 🗂️ [PigeonBox 生态](https://github.com/orgs/pigeonbox)成员仓 · 应用包统一发布在 [hub 仓 Releases](https://github.com/pigeonbox/pigeonbox/releases)（`fnos-v*` 资产）
 
@@ -15,16 +15,17 @@
 | **一键安装** | `fnpack` 标准应用包，应用中心托管启停/升级 | ✅ fnpack 1.2.3 打包通过 |
 | **业务全功能** | 单进程库式调用 [core](https://github.com/pigeonbox/core) `bootstrap.Bootstrap()`，文本/文件分享、取件码、多云存储全部可用 | ✅ |
 | **数据落 NAS** | 上传文件 + SQLite 全部落在用户可见的共享目录，文件管理器可直接查看/备份 | ✅ |
-| **开箱即用** | JWT 密钥自动生成并持久化；默认免 Redis（core v0.14.0 单机内存模式，取件码映射存进程内、重启/升级失效）；安装向导收集可选凭证 | ✅ |
-| **降级模式** | 未配置飞牛凭证时，飞牛集成关闭、业务完整运行 | ✅ |
-| **SSO 免登录** | 飞牛账号一键登录映射为本系统用户 | 🔜 待凭证 |
-| **通知中心** | 分享事件推送飞牛通知 | 🔜 待凭证 |
-| **共享目录存储** | 读取 NAS 共享文件夹作为存储后端选项 | 🔜 待凭证 |
+| **开箱即用** | JWT 密钥自动生成并持久化；默认免 Redis（core v0.14.0 单机内存模式，取件码映射存进程内、重启/升级失效）；安装向导设管理员密码与服务端口 | ✅ |
+| **降级模式** | 非 fnOS 环境（裸进程/Docker）自动降级，飞牛集成关闭、业务完整运行 | ✅ |
+| **SSO 免登录** | 统一网关 `app.sock` X-Trim-* 可信用户头免登录，飞牛账号映射为本系统用户 | ✅ v1.14.6 真机验证 |
+| **授权目录联动** | 官方后端 API（trim.file.*）授权目录、文件管理器互通 | ✅ v1.14.6 |
+| **主题/语言跟随** | 前端跟随 fnOS 主题与系统语言（@trimjs/web-app 微应用） | ✅ v1.14.6 |
+| **通知中心/内网穿透** | 官方一期未开放——能力缺席非缺陷 | ⏸ 待官方 |
 
-## 运行时架构（单容器单进程）
+## 运行时架构（单进程单端口）
 
 ```
-                ┌──────────────── fnos-adapter 二进制(容器入口)────────────────┐
+                ┌──────────────── fnos-adapter 二进制(进程入口)────────────────┐
                 │                                                              │
   HTTP 12345 ──►│  bootstrap.Bootstrap() ──► *server.Hertz (PigeonBox 全业务)│
                 │         │                              ▲                      │
@@ -45,7 +46,7 @@
 2. 飞牛应用中心 → 手动安装 → 上传 fpk，按向导完成安装（飞牛凭证可留空，随时在应用设置补填）
 3. 桌面入口打开即用；数据在应用数据目录（NAS 共享路径）下的 `data/`（上传文件/SQLite/JWT 密钥；取件码映射存进程内存，无独立文件）
 
-> 要求：fnOS 设备可拉取 `ghcr.io/pigeonbox/fnos`（x86/ARM 均可，镜像多架构）。
+> v1.2.7 起 fpk 为原生进程模式：包内自带双架构静态二进制+内嵌前端，安装运行免 Docker 免拉镜像；仅下方「Docker 直接部署」需要设备可拉取 `ghcr.io/pigeonbox/fnos`。
 
 ## 应用内配置（安装后可改）
 
@@ -81,6 +82,14 @@ cd fnos && fnpack build     # 产物 pigeonbox.fpk
 
 注意：发版版本真相源=仓根 `VERSION` 文件(由 hub 发布列车 `scripts/release-train.sh bump` 统一维护)，`fnos/manifest` 的 `version` 与之同步,勿单手改一处。
 
+## 上架官方应用中心
+
+官方应用中心目前为**邀请制**（粉丝群→社区主理人→「应用中心开发者先锋交流群」人工提交），完整流程、材料清单与提交前检查项见 [docs/store-submission.md](docs/store-submission.md)。上架材料一键成包（每列车发版后重跑即得新版材料）：
+
+```bash
+./scripts/assemble-store-package.sh   # fpk+图标+8 张截图+提交说明 → dist/store-submission/*.zip
+```
+
 ## 本地开发
 
 本仓已纳入 [pigeonbox](https://github.com/pigeonbox/pigeonbox) 装配仓的 `go.work`：
@@ -106,18 +115,20 @@ go run ./cmd/fnos-adapter
 
 ```
 fnos/
-├─ cmd/fnos-adapter/            容器入口:JWT 密钥引导 + 库式拉起 + 挂载 adapter
-├─ adapter/                     飞牛 Open API 适配层(/api/fnos/*)
+├─ cmd/fnos-adapter/            进程入口:JWT 密钥引导 + 库式拉起 + 挂载 adapter
+├─ adapter/                     飞牛开放平台适配层(/api/fnos/*)
+│  ├─ gateway/                  统一网关接入(stripPrefix 反代+nonce 防直连伪造头)
+│  ├─ internal/trimapi/         官方后端 API client(trim.file.*/trim.system.*)
 │  ├─ internal/fnosconfig/      配置加载(独立子包,无环)
-│  ├─ internal/client/          飞牛 API 统一 HTTP client(签名/重试待文档)
-│  └─ sso/ storage/ notify/ tunnel/   各能力模块(凭证就绪后填实)
-├─ fnos/                        飞牛 .fpk 应用包定义(官方规范)
-│  ├─ manifest                  应用元数据(version/platform/入口/端口)
-│  ├─ app/docker/               容器编排(app 单服务,官方 TRIM_* 占位符)
+│  └─ sso/ storage/             SSO 映射(oidc_sub=fnos:<uid>)与授权目录联动
+├─ web/                         fnOS 宿主适配器(@trimjs/web-app)+frontend-core tgz 自包含前端(构建→fnos/app/www)
+├─ fnos/                        飞牛 .fpk 应用包定义(官方规范,原生进程模式)
+│  ├─ manifest                  应用元数据(version/platform/入口/端口/micro_app)
+│  ├─ app/{bin,www,configs}/    双架构静态二进制+内嵌前端+只读配置(build-native.sh 产出)
 │  ├─ app/ui/                   桌面入口(config)与图标(images/)
 │  ├─ cmd/                      生命周期脚本(install/upgrade/uninstall/config)
-│  ├─ wizard/                   安装/配置向导(飞牛凭证与 JWT 密钥)
-│  └─ config/                   权限(privilege)与资源(resource: docker-project)
+│  ├─ wizard/                   安装/配置向导(管理员密码/服务端口/JWT 密钥)
+│  └─ config/                   权限(privilege)与资源(resource: data-share)
 └─ Dockerfile                   多架构镜像构建(amd64/arm64;内嵌前端+entrypoint 降权)
 ```
 
@@ -129,6 +140,7 @@ fnos/
 
 | 本仓 | core | 说明 |
 |------|------|------|
+| v1.14.x | v0.14.4 → v0.14.9 | 版本随产品主版本（hub 发布列车同号）；v1.14.3=配置面板（管理员密码/端口）+看门狗自愈+env 前缀 PB_ 更名；**v1.14.6=飞牛官方开放平台深度融合**（统一网关 SSO 免登录/授权目录联动/文件管理器互通/主题语言跟随，真机验证收官） |
 | v1.2.7 | v0.14.2 | 修复 fpk 真机安装失败（目录准备改尽力而为 + entrypoint 兜底归属）；镜像内嵌前端（桌面图标打开即用）；core 补文件/分片上传分享链接 0.0.0.0 漏网路径 |
 | v1.2.6 | v0.14.1 | 跟随 core v0.14.1（env-only 缺 notifies 表修复；分享链接 0.0.0.0 修复） |
 | v1.2.3 | v0.11.0 | 跟随 core v0.11.0（Cookie 会话）；默认关闭开放注册（管理员建号） |
@@ -142,10 +154,11 @@ fnos/
 
 ## 路线图
 
-- [ ] SSO：`sso/sso.go` ticket → 飞牛用户 → 本系统用户 → JWT（待飞牛凭证与 Open API 文档）
-- [ ] 通知中心、共享目录存储、外网分享链接（同上）
-- [ ] fnOS 真机全流程验证（安装→向导→升级→卸载）
-- [ ] 飞牛应用中心上架（开发者后台未开放前经官方交流群提交）
+- [x] SSO 免登录：统一网关可信头 → 飞牛用户 → 本系统用户 → JWT（v1.14.6 真机验证收官）
+- [x] 授权目录联动/文件管理器互通/主题语言跟随（同车）
+- [x] fnOS 真机全流程验证（安装→向导→升级→卸载→看门狗自愈）
+- [ ] 通知中心、内网穿透（官方一期未开放，待官方）
+- [ ] 飞牛官方应用中心上架（邀请制群提交；材料链路就绪:docs/store-submission.md + scripts/assemble-store-package.sh）
 
 ## 相关仓库
 
