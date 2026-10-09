@@ -8,9 +8,9 @@
 #
 # 前端来源优先级(与 openwrt/scripts/build-frontend.sh 同策略):
 #   1. FRONTEND_DIST 环境变量指定的现成 dist 目录
-#   2. 工作区已检出的 frontend 仓(../../frontend,hub make setup 布局)
+#   2. 工作区已检出的 frontend 仓(../frontend,与 fnos 同级,hub make setup 布局)
 #   3. 临时克隆 pigeonbox/frontend <FRONTEND_REF,默认 main>
-# 只跑 vite build(类型检查由 frontend 仓 CI 独立把守);wire 类型依赖
+# 只跑 vite build fnos flavor(类型检查由 frontend 壳仓 CI 独立把守);wire 类型依赖
 # @pigeonbox/contracts 的 Release tgz 资产(匿名可下)。
 #
 # 版本注入:VERSION/COMMIT 环境变量优先,缺省取 git describe/rev-parse。
@@ -43,8 +43,8 @@ rm -rf "$WWW_DIR"
 SRC="${FRONTEND_DIST:-}"
 CLEANUP_SRC=""
 if [ -z "$SRC" ]; then
-  if [ -f "$ROOT/../../frontend/package.json" ]; then
-    SRC="$(cd "$ROOT/../../frontend" && pwd)"
+  if [ -f "$ROOT/../frontend/package.json" ]; then
+    SRC="$(cd "$ROOT/../frontend" && pwd)"
     echo "    使用工作区 frontend: $SRC"
   else
     SRC="$(mktemp -d)/frontend"
@@ -58,7 +58,9 @@ trap '[ -n "${CLEANUP_SRC:-}" ] && rm -rf "$(dirname "$CLEANUP_SRC")"' EXIT
 
 cd "$SRC"
 [ -d node_modules ] || npm ci --no-audit --no-fund
-npx vite build --outDir "$WWW_DIR" --emptyOutDir
+# fnos flavor:壳入口注入宿主适配器(2026-10-09 拆分双仓后 neutral 产物无适配器,
+# fpk 必须用 build:fnos flavor;vite.fnos.config.ts 内置 publicDir=core public)
+npx vite build --config vite.fnos.config.ts --outDir "$WWW_DIR" --emptyOutDir
 
 echo "==> 完成"
 ls -lh "$BIN_DIR"
