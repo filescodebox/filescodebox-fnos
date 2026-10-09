@@ -3,10 +3,11 @@
     "pigeonbox.main": {
       "title": "PigeonBox",
       "icon": "images/icon_{0}.png",
-      "type": "url",
-      "protocol": "http",
-      "port": "12345",
-      "url": "/",
+      "type": "iframe",
+      "protocol": "",
+      "gatewayPrefix": "/app/pigeonbox",
+      "gatewaySocket": "app.sock",
+      "url": "/app/pigeonbox",
       "allUsers": true
     }
   }

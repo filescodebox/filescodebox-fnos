@@ -91,21 +91,32 @@ func main() {
 	}
 	defer bootstrap.Cleanup()
 
-	// 2. 初始化飞牛适配配置(从环境变量读凭证,缺省=降级模式)。
+	// 2. 初始化飞牛集成配置(运行环境探测,非 fnOS 环境自然全降级)。
 	//    此时 logger 已就绪,可安全调用。
 	fnosCfg := adapter.LoadConfig()
-	if !fnosCfg.Enabled {
-		logger.Warn("飞牛 Open API 适配层未启用(降级模式):业务正常运行,飞牛能力关闭",
+	if !fnosCfg.GatewayEnabled && !fnosCfg.TrimAPIEnabled {
+		logger.Warn("飞牛深度集成未启用:业务正常运行,飞牛联动关闭",
 			zap.String("reason", fnosCfg.DisabledReason))
 	} else {
-		logger.Info("飞牛 Open API 适配层已启用",
-			zap.String("appid", fnosCfg.AppID),
-			zap.String("api_base", fnosCfg.APIBase))
+		logger.Info("飞牛深度集成配置就绪",
+			zap.Bool("gateway", fnosCfg.GatewayEnabled),
+			zap.String("socket", fnosCfg.SocketPath),
+			zap.Bool("trimapi", fnosCfg.TrimAPIEnabled),
+			zap.String("prefix", fnosCfg.GatewayPrefix))
 	}
 
-	// 3. 装配飞牛适配层(在 Hertz server 上挂载 /api/fnos/* 路由组)。
-	//    不影响 PigeonBox 原有路由,飞牛能力以独立路由组注入。
-	adapter.Mount(h, fnosCfg)
+	// 3. 装配飞牛集成(网关 socket 反代 + /api/fnos/* 路由组)。
+	//    不影响 PigeonBox 原有路由;返回网关停机函数(非 fnOS 环境为 nil)。
+	stopGateway := adapter.Mount(h, fnosCfg)
+	defer func() {
+		if stopGateway != nil {
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			defer cancel()
+			if err := stopGateway(shutdownCtx); err != nil {
+				logger.Warn("网关 socket 清理失败", zap.Error(err))
+			}
+		}
+	}()
 
 	// 4. 启动 HTTP 服务。
 	go func() {

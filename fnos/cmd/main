@@ -44,6 +44,11 @@ prepare_env() {
     # 端口:向导/配置面板注入的 PB_SERVER_PORT 优先(框架在进程启动前注入 env),
     # 缺省回退 12345——勿无条件覆盖,否则向导改端口永远不生效。
     export PB_SERVER_PORT="${PB_SERVER_PORT:-12345}"
+    # 统一网关 socket(fnOS 原生环境自动启用):进程监听 ${TRIM_APPDEST}/app.sock,
+    # 框架网关校验 NAS 登录态后转发并注入用户头——SSO 免登录/授权目录联动的前提。
+    if [ -n "${TRIM_APPDEST:-}" ]; then
+        export PB_GATEWAY_SOCKET="${TRIM_APPDEST}/app.sock"
+    fi
     # 向导凭证(install/config_callback 写入,优先数据卷、回退包根);
     # 缺省时 adapter 降级模式+JWT 自动生成
     local env_file=""

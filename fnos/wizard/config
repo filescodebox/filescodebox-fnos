@@ -39,24 +39,12 @@
     ]
   },
   {
-    "stepTitle": "飞牛集成(可选)",
+    "stepTitle": "飞牛集成",
     "items": [
       {
         "type": "tips",
         "field": "fnos_tip",
-        "helpText": "修改凭证提交后,应用会以新配置重启。留空 AppID/AppSecret 即为降级模式(分享功能完整,飞牛深度集成关闭)。"
-      },
-      {
-        "type": "text",
-        "field": "FNOS_APPID",
-        "label": "飞牛 Open API AppID",
-        "initValue": ""
-      },
-      {
-        "type": "password",
-        "field": "FNOS_APPSECRET",
-        "label": "飞牛 Open API AppSecret",
-        "initValue": ""
+        "helpText": "深度融合开箱即用,无需任何凭证:统一网关免登录(SSO)、授权目录联动、主题语言跟随均由系统环境自动就绪,无需在此配置。"
       }
     ]
   }

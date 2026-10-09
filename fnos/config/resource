@@ -4,5 +4,10 @@
             { "name": "pigeonbox" },
             { "name": "pigeonbox/data" }
         ]
-    }
+    },
+    "api-scope": [
+        "trim.file.sharedAccess",
+        "trim.file.path",
+        "trim.system.getPlatformConfig"
+    ]
 }

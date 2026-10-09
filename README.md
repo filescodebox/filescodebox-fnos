@@ -95,8 +95,9 @@ GOWORK=off go test ./...
 # 降级模式运行(业务全功能,飞牛能力关闭)
 go run ./cmd/fnos-adapter
 
-# 启用飞牛能力(需凭证)
-FNOS_ENABLED=true FNOS_APPID=xxx FNOS_APPSECRET=yyy go run ./cmd/fnos-adapter
+# 启用飞牛深度集成(无需凭证:由 fnOS 运行环境自动探测 TRIM_* 变量;
+# 裸进程/Docker 等 fnOS 外环境自动降级,业务全功能)
+go run ./cmd/fnos-adapter
 ```
 
 或使用 `make build / test / run / fpack / docker`。

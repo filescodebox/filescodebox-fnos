@@ -31,24 +31,12 @@
     ]
   },
   {
-    "stepTitle": "飞牛集成(可选)",
+    "stepTitle": "飞牛集成",
     "items": [
       {
         "type": "tips",
         "field": "fnos_tip",
-        "helpText": "以下凭证留空时,应用以降级模式运行:文件/文本分享全部功能正常,飞牛 SSO/通知等深度集成关闭。可安装后在应用设置中随时补填。"
-      },
-      {
-        "type": "text",
-        "field": "FNOS_APPID",
-        "label": "飞牛 Open API AppID",
-        "initValue": ""
-      },
-      {
-        "type": "password",
-        "field": "FNOS_APPSECRET",
-        "label": "飞牛 Open API AppSecret",
-        "initValue": ""
+        "helpText": "深度融合开箱即用,无需任何凭证:从飞牛桌面打开应用即免登录(SSO,自动映射 NAS 账号);管理后台存储设置可联动授权目录选择器;主题与语言自动跟随系统。"
       }
     ]
   }

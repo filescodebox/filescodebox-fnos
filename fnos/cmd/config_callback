@@ -2,16 +2,17 @@
 # 配置向导提交回调:向导字段写入数据目录 .env(逻辑与 install_callback 一致),重启应用生效。
 #
 # 字段契约(wizard/config 与 install 一致):
-#   FNOS_APPID/FNOS_APPSECRET  飞牛集成(留空=降级模式,分享功能完整)
 #   PB_JWT_SECRET             留空沿用自动生成
 #   PB_ADMIN_PASSWORD         非空=重置管理员密码为该值(置 .admin_reset 标记,
 #                              cmd/main 启动前删 admin 用户,core 按 env 重建);留空=不改动
 #   PB_SERVER_PORT            服务端口(同步安装目录 manifest.service_port 供框架入口探测;
 #                              进程监听端口由 cmd/main prepare_env 消费)
 #
+# 飞牛深度集成(2026-10-09 起)无需任何用户凭证:统一网关(SSO 免登录)、
+# 官方后端 API(TRIM_API_TOKEN 由框架注入)均由 fnOS 运行环境自动就绪。
+#
 # 优先 ${TRIM_PKGVAR}/.env(数据卷,升级保留);目录不可写时回退包根
-# ${TRIM_APPDEST}/.env(cmd/main 两处都找)。写失败不阻断——凭证可随时在
-# 应用设置(配置向导)补填。FNOS_ENABLED 由凭证是否齐全推导,不单独向用户收集。
+# ${TRIM_APPDEST}/.env(cmd/main 两处都找)。写失败不阻断。
 
 quote() {
   printf '"%s"' "$(printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/\$/\\$/g')"
@@ -21,25 +22,17 @@ write_env() {
   umask 077
   cat > "$1" <<EOF
 # 由飞牛向导生成(cmd/install_callback 或 config_callback),手工修改后需在应用设置重新提交或重启应用
-FNOS_ENABLED=$(quote "$ENABLED")
-FNOS_APPID=$(quote "$FNOS_APPID")
-FNOS_APPSECRET=$(quote "$FNOS_APPSECRET")
 PB_JWT_SECRET=$(quote "$PB_JWT_SECRET")
 PB_ADMIN_PASSWORD=$(quote "$PB_ADMIN_PASSWORD")
 PB_SERVER_PORT=$(quote "$PB_SERVER_PORT")
 EOF
 }
 
-ENABLED="false"
-if [ -n "$FNOS_APPID" ] && [ -n "$FNOS_APPSECRET" ]; then
-  ENABLED="true"
-fi
-
 if mkdir -p "${TRIM_PKGVAR}" 2>/dev/null && write_env "${TRIM_PKGVAR}/.env" 2>/dev/null; then
-  echo "wizard env written: ${TRIM_PKGVAR}/.env (FNOS_ENABLED=$ENABLED)"
+  echo "wizard env written: ${TRIM_PKGVAR}/.env"
 else
   if write_env "${TRIM_APPDEST}/.env" 2>/dev/null; then
-    echo "wizard env written (fallback): ${TRIM_APPDEST}/.env (FNOS_ENABLED=$ENABLED)"
+    echo "wizard env written (fallback): ${TRIM_APPDEST}/.env"
   else
     echo "warn: could not write wizard env (both paths failed); fill via app settings later"
   fi
