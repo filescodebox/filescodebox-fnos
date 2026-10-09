@@ -140,16 +140,23 @@ export const fnosHostAdapter: HostAdapter = {
       /* 宿主不支持换令牌时仍尝试 */
     }
     try {
-      const res = await request<{
-        code: number
-        message: string
-        data: { token: string; user: userContract.UserData }
-      }>({
-        url: '/api/fnos/login',
+      // 裸 fetch(带凭据)而非共享 request:SSO 的 401 是预期安全失败,必须脱离
+      // 应用会话拦截器语义(refresh→logout→跳登录页会把匿名访客弹出首页,
+      // 2026-10-09 真机实测);成功后 Cookie 已由服务端下发
+      const ctrl = new AbortController()
+      const timer = setTimeout(() => ctrl.abort(), 8000)
+      const res = await fetch('api/fnos/login', {
         method: 'POST',
-        timeout: 8000,
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        signal: ctrl.signal,
       })
-      return res.code === 200 ? res.data.user : null
+      clearTimeout(timer)
+      const body = (await res.json()) as {
+        code: number
+        data?: { token: string; user: userContract.UserData }
+      }
+      return res.ok && body.code === 200 && body.data ? body.data.user : null
     } catch {
       return null
     }

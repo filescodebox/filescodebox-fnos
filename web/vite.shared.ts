@@ -22,6 +22,10 @@ export function sharedPlugins() {
       resolvers: [ElementPlusResolver()],
       dts: fileURLToPath(new URL('./src/components.d.ts', import.meta.url)),
       dirs: [`${coreSrc}/components`],
+      // core 以 tgz 形态住在 node_modules——unplugin 默认 exclude node_modules,
+      // 会让 core 源码模板里的 El*(el-icon 等图标容器)永远不被解析(图标全灭,
+      // 2026-10-09 真机视觉回归实锤)。这里只排 .git,放行 core 源码参与解析。
+      exclude: [/\/\.git\//],
     }),
   ]
 }
