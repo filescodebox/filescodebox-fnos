@@ -23,8 +23,10 @@ RUN apk add --no-cache git \
        https://github.com/pigeonbox/frontend.git /src
 
 WORKDIR /src
+# fnos flavor(2026-10-09 拆分双仓后 neutral 产物不含宿主适配器——与
+# scripts/build-native.sh 同款修正,镜像内嵌前端必须带 fnos 适配器)
 RUN npm ci --no-audit --no-fund \
-    && npx vite build --outDir /frontend-dist --emptyOutDir
+    && npx vite build --config vite.fnos.config.ts --outDir /frontend-dist --emptyOutDir
 
 # ========== Stage 2: 构建 fnos-adapter(含 PigeonBox 库) ==========
 FROM golang:1.26-alpine AS builder
