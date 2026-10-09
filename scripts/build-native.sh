@@ -6,12 +6,10 @@
 #   fnos/app/bin/pigeonbox-linux-arm64
 #   fnos/app/www/            (前端构建产物)
 #
-# 前端来源优先级(与 openwrt/scripts/build-frontend.sh 同策略):
-#   1. FRONTEND_DIST 环境变量指定的现成 dist 目录
-#   2. 工作区已检出的 frontend 仓(../frontend,与 fnos 同级,hub make setup 布局)
-#   3. 临时克隆 pigeonbox/frontend <FRONTEND_REF,默认 main>
-# 只跑 vite build fnos flavor(类型检查由 frontend 壳仓 CI 独立把守);wire 类型依赖
-# @pigeonbox/contracts 的 Release tgz 资产(匿名可下)。
+# 前端来源(2026-10-09 拆仓:web 适配器+构建自包含在本仓 web/):
+#   1. FRONTEND_DIST 环境变量指定的现成 dist 目录(直接拷贝,跳过构建)
+#   2. 本仓 web/(fnOS 宿主适配器+@pigeonbox/frontend-core tgz 钉版,见 web/package.json)
+# 不再克隆 frontend 仓——fpk web 内容随本仓提交可复现;类型检查由 fnos CI 把守。
 #
 # 版本注入:VERSION/COMMIT 环境变量优先,缺省取 git describe/rev-parse。
 set -euo pipefail
@@ -40,27 +38,18 @@ done
 
 echo "==> 构建前端 dist → $WWW_DIR"
 rm -rf "$WWW_DIR"
-SRC="${FRONTEND_DIST:-}"
-CLEANUP_SRC=""
-if [ -z "$SRC" ]; then
-  if [ -f "$ROOT/../frontend/package.json" ]; then
-    SRC="$(cd "$ROOT/../frontend" && pwd)"
-    echo "    使用工作区 frontend: $SRC"
-  else
-    SRC="$(mktemp -d)/frontend"
-    CLEANUP_SRC="$SRC"
-    echo "    克隆 frontend@$FRONTEND_REF"
-    git clone -q --depth 1 -b "$FRONTEND_REF" \
-      "https://github.com/pigeonbox/frontend.git" "$SRC"
-  fi
+if [ -n "${FRONTEND_DIST:-}" ]; then
+  cp -R "$FRONTEND_DIST/." "$WWW_DIR"
+  echo "    使用现成 dist: $FRONTEND_DIST"
+else
+  SRC="$ROOT/web"
+  cd "$SRC"
+  [ -d node_modules ] || npm ci --no-audit --no-fund
+  # APP_VERSION=页脚「前端版本」(缺省=web/package.json version,与
+  # frontend-core tgz 钉版同步;可由构建环境覆盖)
+  APP_VERSION="${APP_VERSION:-$(node -p "require('./package.json').version")}" \
+    npx vite build --outDir "$WWW_DIR" --emptyOutDir
 fi
-trap '[ -n "${CLEANUP_SRC:-}" ] && rm -rf "$(dirname "$CLEANUP_SRC")"' EXIT
-
-cd "$SRC"
-[ -d node_modules ] || npm ci --no-audit --no-fund
-# fnos flavor:壳入口注入宿主适配器(2026-10-09 拆分双仓后 neutral 产物无适配器,
-# fpk 必须用 build:fnos flavor;vite.fnos.config.ts 内置 publicDir=core public)
-npx vite build --config vite.fnos.config.ts --outDir "$WWW_DIR" --emptyOutDir
 
 echo "==> 完成"
 ls -lh "$BIN_DIR"

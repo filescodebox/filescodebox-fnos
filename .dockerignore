@@ -2,4 +2,10 @@
 *.md
 !README.md
 fnos/*.fpk
+*.fpk
 .DS_Store
+node_modules
+dist
+web/node_modules
+web/dist
+data

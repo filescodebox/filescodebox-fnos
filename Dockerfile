@@ -4,29 +4,24 @@
 # 并挂载飞牛 Open API 适配层(SSO/共享目录/通知/内网穿透),同端口服务内嵌前端。
 #
 # 构建上下文为本仓库即可(core/contracts 经 go.mod 正式版本从 module proxy 拉取;
-# 前端产物自 pigeonbox/frontend 现场构建,架构无关,只在构建机原生平台跑一次)。
+# 前端自本仓 web/ 构建——2026-10-09 拆仓后适配器+构建自包含,依赖 frontend-core
+# tgz 钉版在 web/package.json;架构无关,只在构建机原生平台跑一次)。
 #   cd fnos && docker build -t fnos:latest .
 # GOPROXY 可用 --build-arg GOPROXY=... 覆盖(默认国内加速;海外 CI 传空走默认)。
 
 # ========== Stage 1: 前端构建产物(架构无关,BUILDPLATFORM 原生跑一次) ==========
 # v1.2.7 起内嵌前端:fpk 桌面图标指向 http://<nas>:12345/,纯后端镜像只会给 404
-# (2026-10-07 真机事故)。只跑 vite build(类型检查由 frontend 仓 CI 独立把守,
-# 与 openwrt/scripts/build-frontend.sh 同策略)。
+# (2026-10-07 真机事故)。web/ 自包含构建(类型检查由 fnos CI 把守)。
 FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
 
-ARG FRONTEND_REF=main
 ARG NPM_REGISTRY=https://registry.npmjs.org
 ENV NPM_CONFIG_REGISTRY=${NPM_REGISTRY}
 
-RUN apk add --no-cache git \
-    && git clone -q --depth 1 -b "${FRONTEND_REF}" \
-       https://github.com/pigeonbox/frontend.git /src
-
 WORKDIR /src
-# fnos flavor(2026-10-09 拆分双仓后 neutral 产物不含宿主适配器——与
-# scripts/build-native.sh 同款修正,镜像内嵌前端必须带 fnos 适配器)
-RUN npm ci --no-audit --no-fund \
-    && npx vite build --config vite.fnos.config.ts --outDir /frontend-dist --emptyOutDir
+COPY web/package.json web/package-lock.json* ./
+RUN npm ci --no-audit --no-fund
+COPY web/ .
+RUN npx vite build --outDir /frontend-dist --emptyOutDir
 
 # ========== Stage 2: 构建 fnos-adapter(含 PigeonBox 库) ==========
 FROM golang:1.26-alpine AS builder
