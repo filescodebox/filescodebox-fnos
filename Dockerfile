@@ -12,7 +12,7 @@
 # ========== Stage 1: 前端构建产物(架构无关,BUILDPLATFORM 原生跑一次) ==========
 # v1.2.7 起内嵌前端:fpk 桌面图标指向 http://<nas>:12345/,纯后端镜像只会给 404
 # (2026-10-07 真机事故)。web/ 自包含构建(类型检查由 fnos CI 把守)。
-FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
+FROM --platform=$BUILDPLATFORM node:25-alpine AS frontend
 
 ARG NPM_REGISTRY=https://registry.npmjs.org
 ENV NPM_CONFIG_REGISTRY=${NPM_REGISTRY}
